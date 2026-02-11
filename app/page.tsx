@@ -2,49 +2,54 @@
 
 import { useState } from "react"
 import AppShell, { TopBar } from "@/components/app-shell"
-import DashboardPage from "@/components/pages/dashboard"
+import FloatingAIAssistant from "@/components/floating-ai-assistant"
+import HomeBriefingPage from "@/components/pages/home-briefing"
 import IntelligencePage from "@/components/pages/intelligence"
 import OperationsPage from "@/components/pages/operations"
 import PolicyPage from "@/components/pages/policy"
-import SchedulePage from "@/components/pages/schedule"
+import { MotionPage } from "@/components/motion"
 
 const pageMeta: Record<string, { title: string; subtitle?: string }> = {
-  dashboard: { title: "决策总览", subtitle: "院长决策系统 - 全局态势感知" },
-  intelligence: {
-    title: "人才与技术情报库",
-    subtitle: "实时追踪政策、技术、人才及内部运营动态",
+  home: { title: "院长早报", subtitle: "今日态势 · 全局掌控" },
+  radar: {
+    title: "战略雷达",
+    subtitle: "外部情报 · 政策技术竞对",
   },
-  operations: {
-    title: "学院运营与风险",
-    subtitle: "Internal Ops & Risk",
+  internal: {
+    title: "院内事务",
+    subtitle: "异常管理 · 风险预警",
   },
-  policy: {
-    title: "政策与人才监控",
-    subtitle: "Policy & Personnel Monitor",
-  },
-  schedule: {
-    title: "智能日程与建议",
-    subtitle: "AI Advisor Active",
+  network: {
+    title: "政策与人脉",
+    subtitle: "人才追踪 · 关系维护",
   },
 }
 
 export default function Page() {
-  const [activePage, setActivePage] = useState("dashboard")
-  const meta = pageMeta[activePage] || pageMeta.dashboard
+  const [activePage, setActivePage] = useState("home")
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const meta = pageMeta[activePage] || pageMeta.home
 
   return (
     <div className="flex min-h-screen bg-background">
-      <AppShell activePage={activePage} onNavigate={setActivePage} />
-      <main className="ml-[220px] flex-1">
+      <AppShell
+        activePage={activePage}
+        onNavigate={setActivePage}
+        collapsed={sidebarCollapsed}
+        onCollapsedChange={setSidebarCollapsed}
+      />
+      <main className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-[70px]' : 'ml-[220px]'}`}>
         <TopBar title={meta.title} subtitle={meta.subtitle} />
         <div className="min-h-[calc(100vh-64px)]">
-          {activePage === "dashboard" && <DashboardPage />}
-          {activePage === "intelligence" && <IntelligencePage />}
-          {activePage === "operations" && <OperationsPage />}
-          {activePage === "policy" && <PolicyPage />}
-          {activePage === "schedule" && <SchedulePage />}
+          <MotionPage pageKey={activePage}>
+            {activePage === "home" && <HomeBriefingPage />}
+            {activePage === "radar" && <IntelligencePage />}
+            {activePage === "internal" && <OperationsPage />}
+            {activePage === "network" && <PolicyPage />}
+          </MotionPage>
         </div>
       </main>
+      <FloatingAIAssistant />
     </div>
   )
 }

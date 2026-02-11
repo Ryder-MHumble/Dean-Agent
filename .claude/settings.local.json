@@ -10,7 +10,36 @@
       "Bash(taskkill //F //PID 168672)",
       "WebFetch(domain:medium.com)",
       "WebFetch(domain:github.com)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(cmdkey /list:*)",
+      "Bash(timeout:*)",
+      "Bash(npx next build:*)",
+      "Bash(if exist \".next\" rmdir /s /q \".next\")",
+      "Bash(next dev)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next lint)",
+      "Bash(npm run lint)",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c \"taskkill /PID 38236 /F\")",
+      "Bash(cmd /c \"taskkill /PID 38236 /F /T\")",
+      "Bash(cmd /c \"netstat -ano | findstr :3000\")",
+      "Bash(cmd /c \"del /f /q C:\\\\Users\\\\hp\\\\Desktop\\\\DeanAgent\\\\DeanAgent\\\\.next\\\\dev\\\\lock\")",
+      "Bash(cmd /c \"del /f C:\\\\Users\\\\hp\\\\Desktop\\\\DeanAgent\\\\DeanAgent\\\\.next\\\\dev\\\\lock 2>nul\")",
+      "Bash(cmd /c \"tasklist | findstr node.exe\")",
+      "Bash(cmd /c \"if exist .next\\\\dev rmdir /s /q .next\\\\dev\")",
+      "Bash(powershell -Command:*)",
+      "Bash(cmd /c \"if exist .next rmdir /s /q .next\")",
+      "Bash(if exist .next rmdir /s /q .next)"
     ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "postgresql"
+  ],
+  "enabledPlugins": {
+    "code-simplifier@claude-plugins-official": true
   }
 }
