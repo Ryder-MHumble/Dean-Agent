@@ -9,7 +9,8 @@
       "Bash(tasklist:*)",
       "Bash(taskkill //F //PID 168672)",
       "WebFetch(domain:medium.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(git add:*)"
     ]
   }
 }
