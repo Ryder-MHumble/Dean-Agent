@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(pnpm --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(tasklist:*)",
+      "Bash(taskkill //F //PID 168672)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}
