@@ -1,0 +1,155 @@
+import type { Contact, RelationshipSummary } from "@/lib/types/network";
+
+export const mockContacts: Contact[] = [
+  {
+    id: "c1",
+    name: "张明远",
+    org: "教育部高教司",
+    title: "副司长",
+    strength: 92,
+    lastContact: "2026-02-08",
+    lastContactDays: 5,
+    status: "active",
+    statusLabel: "活跃",
+    suggestion: "下周教育部将召开新工科座谈会，可借机当面沟通学科评估事宜",
+    tags: ["政府", "学科评估", "核心"],
+    history: [
+      { date: "2026-02-08", event: "电话沟通新工科评估标准细节" },
+      { date: "2026-01-15", event: "共同出席全国高教论坛，晚宴交流" },
+      { date: "2025-12-20", event: "递送学院年度报告及新年贺礼" },
+      { date: "2025-11-10", event: "邀请来院指导本科教学审核评估" },
+    ],
+    talkingPoints: [
+      "感谢上次座谈会的指导意见，学院已据此调整培养方案",
+      "AI+教育跨学科项目进展可作为典型案例汇报",
+      "可提及正在申报的教育部重点实验室，请教申报策略",
+    ],
+    detail:
+      "教育部高教司分管工程教育与新工科建设，与我院学科发展密切相关。张司长对AI赋能教育改革持开放态度，是推动学科评估和重点实验室申报的关键人物。",
+  },
+  {
+    id: "c2",
+    name: "李文华",
+    org: "清华大学计算机学院",
+    title: "院长",
+    strength: 85,
+    lastContact: "2026-01-22",
+    lastContactDays: 22,
+    status: "active",
+    statusLabel: "活跃",
+    suggestion: "李院长近期发表Nature子刊论文，可发送祝贺并探讨合作可能",
+    tags: ["高校", "科研合作", "核心"],
+    history: [
+      { date: "2026-01-22", event: "联合研讨会上讨论AI大模型合作" },
+      { date: "2025-12-05", event: "共同参加CCF年度大会" },
+      { date: "2025-10-18", event: "互访交流研究生联合培养" },
+    ],
+    talkingPoints: [
+      "祝贺Nature Machine Intelligence论文发表，探讨联合研究方向",
+      "研究生联合培养项目第一批学生反馈良好，可商议扩大规模",
+      "双方共建实验室的设备采购进展更新",
+    ],
+    detail:
+      "清华计算机学院是国内顶尖CS院系，李院长在AI大模型和系统研究领域有深厚积累。双方已建立研究生联合培养机制和共建实验室合作关系。",
+  },
+  {
+    id: "c3",
+    name: "王建国",
+    org: "华为技术有限公司",
+    title: "2012实验室副总裁",
+    strength: 71,
+    lastContact: "2025-12-15",
+    lastContactDays: 60,
+    status: "cooling",
+    statusLabel: "待维护",
+    suggestion: "华为近期发布新一代昇腾芯片，可借机重启产学研合作洽谈",
+    tags: ["企业", "产学研", "重要"],
+    history: [
+      { date: "2025-12-15", event: "校企合作座谈，讨论联合实验室" },
+      { date: "2025-09-20", event: "华为开发者大会相遇交流" },
+    ],
+    talkingPoints: [
+      "昇腾AI芯片新品可作为联合实验室核心算力平台",
+      "我院3名博士生在华为实习表现优异，可深化人才输送",
+      "产学研合作基地挂牌事宜需尽快推进",
+    ],
+    detail:
+      "华为2012实验室是华为核心研究机构，王总裁主管AI基础研究。双方曾就联合实验室、人才培养和芯片适配开展初步合作。近期联系减少，关系有降温趋势。",
+  },
+  {
+    id: "c4",
+    name: "陈晓薇",
+    org: "北京市科委",
+    title: "高新处处长",
+    strength: 65,
+    lastContact: "2025-11-28",
+    lastContactDays: 77,
+    status: "cooling",
+    statusLabel: "待维护",
+    suggestion: "北京市科技计划即将发布指南，需尽快拜访了解申报方向",
+    tags: ["政府", "科技项目", "重要"],
+    history: [
+      { date: "2025-11-28", event: "参加北京市科技创新大会" },
+      { date: "2025-08-10", event: "陪同校领导拜访科委" },
+    ],
+    talkingPoints: [
+      "北京市重点实验室年度考核结果出色，可当面汇报",
+      "新一年科技计划中AI+生物交叉方向是否有专项支持",
+      "邀请参观学院新落成的智能计算中心",
+    ],
+    detail:
+      "北京市科委高新处主管高新技术企业认定和科技计划项目管理，陈处长对高校科技成果转化有浓厚兴趣。是获取北京市科技资源和项目支持的关键联系人。",
+  },
+  {
+    id: "c5",
+    name: "赵德明",
+    org: "中国科学院自动化研究所",
+    title: "所长",
+    strength: 54,
+    lastContact: "2025-08-20",
+    lastContactDays: 177,
+    status: "dormant",
+    statusLabel: "需激活",
+    suggestion: "赵所长即将当选IEEE Fellow，务必第一时间发送祝贺信",
+    tags: ["科研院所", "人才引进", "待激活"],
+    history: [
+      { date: "2025-08-20", event: "学术研讨会上简短交流" },
+      { date: "2025-03-12", event: "邀请做院级学术报告" },
+    ],
+    talkingPoints: [
+      "热烈祝贺即将当选IEEE Fellow，提议共同举办庆祝学术活动",
+      "自动化所在具身智能方向的突破可与我院形成互补",
+      "探讨双聘教授或联合博导的合作模式",
+    ],
+    detail:
+      "中科院自动化所在模式识别和智能系统领域国内领先。赵所长是该领域权威学者，与我院在人才培养和学术交流上有合作基础，但近半年联系中断。",
+  },
+  {
+    id: "c6",
+    name: "刘芳华",
+    org: "浙江大学信息学院",
+    title: "副院长",
+    strength: 48,
+    lastContact: "2025-07-05",
+    lastContactDays: 223,
+    status: "dormant",
+    statusLabel: "需激活",
+    suggestion: "刘副院长刚获国家杰青，应即刻发送祝贺并邀请来院做学术报告",
+    tags: ["高校", "学术交流", "待激活"],
+    history: [{ date: "2025-07-05", event: "全国计算机教育大会上交流" }],
+    talkingPoints: [
+      "祝贺获得国家杰青资助，邀请来院做学术报告或短期讲学",
+      "浙大在隐私计算领域的研究成果可与我院联合攻关",
+      "探讨两院教师互访和学生交换的常态化机制",
+    ],
+    detail:
+      "浙江大学信息学院在隐私计算和数据安全领域有国际影响力。刘副院长年轻有为，新获国家杰青资助，是未来重要的学术合作伙伴。当前关系较弱，需主动激活。",
+  },
+];
+
+export const relationshipSummary: RelationshipSummary = {
+  coreContacts: 86,
+  pendingFollowUp: 12,
+  growthRate: 3,
+  halfYearUncontacted: 5,
+};

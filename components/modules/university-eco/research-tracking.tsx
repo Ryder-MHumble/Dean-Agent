@@ -27,92 +27,8 @@ import {
 } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-interface ResearchOutput {
-  id: string;
-  title: string;
-  institution: string;
-  type: "论文" | "专利" | "获奖";
-  influence: "高" | "中" | "低";
-  date: string;
-  field: string;
-  authors: string;
-  aiAnalysis: string;
-  detail: string;
-}
-
-const mockOutputs: ResearchOutput[] = [
-  {
-    id: "r1",
-    title: "基于多模态大模型的具身智能感知框架",
-    institution: "清华大学",
-    type: "论文",
-    influence: "高",
-    date: "2025-05-08",
-    field: "具身智能",
-    authors: "张明远、李华、王磊等",
-    aiAnalysis:
-      "该论文在多模态融合方面提出了新的架构方案，直接对标我院同类研究方向。清华在该领域已连续发表3篇顶会论文，形成系统性领先。建议加强我院在视觉-语言联合建模方面的投入。",
-    detail:
-      "清华大学人工智能研究院在ICRA 2025发表的该论文，提出了一种融合视觉、语言和触觉信号的具身智能感知框架。实验表明该方法在操作任务上提升23%成功率。论文已获领域内高度关注，两周内被引用12次。",
-  },
-  {
-    id: "r2",
-    title: "量子纠错码的拓扑优化方法",
-    institution: "中科院",
-    type: "论文",
-    influence: "高",
-    date: "2025-05-05",
-    field: "量子计算",
-    authors: "陈思远、刘伟航等",
-    aiAnalysis:
-      "中科院在量子纠错码方面取得突破性进展，该方向为量子计算核心瓶颈。建议关注该团队后续研究动态，评估与我院量子计算团队的合作空间。",
-    detail:
-      "中科院物理所在Nature Physics发表论文，提出了一种新型拓扑量子纠错方案，将逻辑错误率降低了2个数量级。这是国内团队首次在该方向上取得国际领先成果。",
-  },
-  {
-    id: "r3",
-    title: "新型锂硫电池正极材料制备工艺（发明专利）",
-    institution: "浙江大学",
-    type: "专利",
-    influence: "中",
-    date: "2025-04-28",
-    field: "新能源材料",
-    authors: "赵俊峰团队",
-    aiAnalysis:
-      "浙大在新能源材料领域持续布局，该专利具有较高的产业化价值。建议评估我院在类似方向的专利布局是否完整，避免技术路线被抢占。",
-    detail:
-      "浙江大学化学工程学院获批的该发明专利，公开了一种低成本、高循环稳定性的锂硫电池正极材料制备方法。已与宁德时代建立联合实验室进行中试。",
-  },
-  {
-    id: "r4",
-    title: "国家自然科学奖二等奖（脑机接口方向）",
-    institution: "北京大学",
-    type: "获奖",
-    influence: "高",
-    date: "2025-04-20",
-    field: "脑科学",
-    authors: "王建华教授团队",
-    aiAnalysis:
-      "北大脑机接口团队获得国家级奖项，标志其在该方向的长期积累获得认可。我院脑科学方向需加快高水平成果产出，争取在下一轮评奖中有所突破。",
-    detail:
-      "北京大学脑科学与类脑研究中心王建华教授团队，凭借「高通量无创脑机接口关键技术及应用」获得2024年度国家自然科学奖二等奖。该团队长期深耕脑机接口领域，已积累专利30余项。",
-  },
-  {
-    id: "r5",
-    title: "面向自动驾驶的端到端决策规划算法",
-    institution: "上海交通大学",
-    type: "论文",
-    influence: "中",
-    date: "2025-04-15",
-    field: "自动驾驶",
-    authors: "刘昊天、周明等",
-    aiAnalysis:
-      "上交在自动驾驶端到端方案上有持续产出，但整体影响力尚未达到头部水平。可持续关注但无需过度警惕。建议我院相关团队重点关注其开源代码的技术路线。",
-    detail:
-      "上海交通大学计算机科学学院在CVPR 2025发表论文，提出了一种将感知、预测和规划统一在单一Transformer架构中的端到端自动驾驶方案。在nuScenes基准上取得了新的SOTA结果。",
-  },
-];
+import type { ResearchOutput } from "@/lib/types/university-eco";
+import { mockResearchOutputs } from "@/lib/mock-data/university-eco";
 
 function TypeBadge({ type }: { type: ResearchOutput["type"] }) {
   const config = {
@@ -212,7 +128,7 @@ export default function ResearchTracking() {
             </CardHeader>
             <CardContent className="pt-0">
               <StaggerContainer className="space-y-3">
-                {mockOutputs.map((output) => (
+                {mockResearchOutputs.map((output) => (
                   <StaggerItem key={output.id}>
                     <button
                       type="button"

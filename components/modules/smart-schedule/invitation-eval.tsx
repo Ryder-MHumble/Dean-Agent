@@ -28,103 +28,8 @@ import {
 } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-interface Invitation {
-  id: string;
-  eventName: string;
-  host: string;
-  date: string;
-  location: string;
-  roiScore: number;
-  aiSuggestion: "参加" | "考虑" | "拒绝";
-  guestHighlights: string;
-  hostAnalysis: string;
-  aiRecommendation: string;
-  detail: string;
-}
-
-const mockInvitations: Invitation[] = [
-  {
-    id: "inv1",
-    eventName: "全国人工智能教育大会",
-    host: "教育部高教司",
-    date: "2025-04-18",
-    location: "北京·国家会议中心",
-    roiScore: 92,
-    aiSuggestion: "参加",
-    guestHighlights: "教育部副部长、清华/北大/浙大AI学院院长",
-    hostAnalysis:
-      "教育部高教司为主管单位，规格极高。历年参会院长平均获得1.5个合作机会。去年参会院校中85%在后续获得政策资源倾斜。",
-    aiRecommendation:
-      "强烈建议参加。该会议为部级主办，参会嘉宾级别高，可与教育部领导当面汇报学院AI+教育成果，争取试点资格。建议提前准备5分钟主题汇报材料。",
-    detail:
-      "全国人工智能教育大会是教育部年度重要会议，聚焦AI赋能教育改革。今年主题为「大模型时代的高等教育变革」，预计200+高校领导参会。",
-  },
-  {
-    id: "inv2",
-    eventName: "北京市产学研协同创新论坛",
-    host: "北京市科委",
-    date: "2025-04-25",
-    location: "北京·中关村论坛永久会址",
-    roiScore: 78,
-    aiSuggestion: "参加",
-    guestHighlights: "北京市副市长、中关村科技企业负责人",
-    hostAnalysis:
-      "北京市科委为地方科技主管部门，与学院多个横向课题相关。北京市近期拟出台AI专项扶持政策，参会有利于提前获取政策信息。",
-    aiRecommendation:
-      "建议参加。北京市AI专项扶持政策即将出台，此次论坛是获取一手政策信息的重要窗口。可与市科委领导沟通学院在京科研布局。",
-    detail:
-      "北京市产学研协同创新论坛是中关村论坛的分论坛之一，聚焦产学研深度融合。今年重点讨论AI产业化路径。",
-  },
-  {
-    id: "inv3",
-    eventName: "某地产集团教育品牌发布会",
-    host: "恒达地产集团",
-    date: "2025-05-10",
-    location: "上海·外滩某酒店",
-    roiScore: 25,
-    aiSuggestion: "拒绝",
-    guestHighlights: "地产公司高管、教培机构负责人",
-    hostAnalysis:
-      "恒达地产近期面临财务困境，此次活动本质是借高校背书进行品牌营销。",
-    aiRecommendation:
-      "建议拒绝。该企业近期负面舆情较多，参与发布会可能被解读为学院为其背书。已检索到该企业3个月内有2次负面报道。",
-    detail:
-      "恒达地产拟推出「教育地产」品牌，邀请多所高校领导站台。该企业近期债务问题频出，媒体报道负面。",
-  },
-  {
-    id: "inv4",
-    eventName: "IEEE 智能系统国际研讨会",
-    host: "IEEE 计算机学会",
-    date: "2025-05-20",
-    location: "深圳·南山科技园",
-    roiScore: 85,
-    aiSuggestion: "参加",
-    guestHighlights: "IEEE Fellow 15人、国际AI领域知名学者",
-    hostAnalysis:
-      "IEEE计算机学会为国际顶级学术组织，本次研讨会聚焦智能系统前沿。参会有助于扩大学院国际学术影响力和人才招募。",
-    aiRecommendation:
-      "建议参加。该研讨会有15名IEEE Fellow参与，是拓展国际学术网络的重要机会。建议安排学院2-3名青年教师随行，进行学术交流和人才对接。",
-    detail:
-      "IEEE智能系统国际研讨会汇聚全球智能系统领域顶尖学者，每年一届。今年主题为「通用人工智能的系统挑战」。",
-  },
-  {
-    id: "inv5",
-    eventName: "某互联网公司年度合作伙伴晚宴",
-    host: "星云科技",
-    date: "2025-05-08",
-    location: "杭州·某五星酒店",
-    roiScore: 45,
-    aiSuggestion: "考虑",
-    guestHighlights: "星云科技CTO、多家高校计算机学院院长",
-    hostAnalysis:
-      "星云科技为国内二线AI企业，与学院有1个在研横向课题。此次晚宴社交性质偏强，直接学术收益有限。",
-    aiRecommendation:
-      "可考虑派副院长参加。与星云科技存在合作关系，完全不参与可能影响合作推进。但院长亲自出席的必要性不高，建议委派副院长或合作项目负责人代为参加。",
-    detail:
-      "星云科技年度合作伙伴晚宴，以维护企业合作关系为目的。与会者多为合作高校和企业伙伴代表。",
-  },
-];
+import type { Invitation } from "@/lib/types/smart-schedule";
+import { mockInvitations } from "@/lib/mock-data/smart-schedule";
 
 function RoiScoreBadge({ score }: { score: number }) {
   const color =
@@ -165,11 +70,35 @@ function SuggestionBadge({
 
 export default function InvitationEval() {
   const [selectedItem, setSelectedItem] = useState<Invitation | null>(null);
-  const pendingCount = mockInvitations.length;
-  const highValueCount = mockInvitations.filter((i) => i.roiScore >= 75).length;
-  const rejectCount = mockInvitations.filter(
+  const [processedItems, setProcessedItems] = useState<
+    Map<string, "accepted" | "declined" | "forwarded">
+  >(new Map());
+
+  const unprocessedInvitations = mockInvitations.filter(
+    (i) => !processedItems.has(i.id),
+  );
+  const pendingCount = unprocessedInvitations.length;
+  const highValueCount = unprocessedInvitations.filter(
+    (i) => i.roiScore >= 75,
+  ).length;
+  const rejectCount = unprocessedInvitations.filter(
     (i) => i.aiSuggestion === "拒绝",
   ).length;
+  const processedCount = processedItems.size;
+
+  const handleProcess = (
+    id: string,
+    action: "accepted" | "declined" | "forwarded",
+  ) => {
+    setProcessedItems((prev) => new Map(prev).set(id, action));
+    setSelectedItem(null);
+    const messages = {
+      accepted: "已确认参加并加入日程，秘书处已收到通知",
+      declined: "已发送婉拒回复，已附上礼貌致意函",
+      forwarded: "已转发给秘书处理",
+    };
+    toast.success(messages[action]);
+  };
 
   return (
     <>
@@ -239,33 +168,79 @@ export default function InvitationEval() {
                   <span></span>
                 </div>
                 <StaggerContainer>
-                  {mockInvitations.map((item) => (
-                    <StaggerItem key={item.id}>
-                      <button
-                        type="button"
-                        className="w-full grid grid-cols-[1fr_100px_90px_80px_80px_40px] gap-2 px-3 py-3 items-center text-left border-b last:border-0 hover:bg-muted/30 transition-colors group cursor-pointer"
-                        onClick={() => setSelectedItem(item)}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          {item.aiSuggestion === "拒绝" && (
-                            <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse-subtle shrink-0" />
+                  {mockInvitations.map((item) => {
+                    const status = processedItems.get(item.id);
+                    return (
+                      <StaggerItem key={item.id}>
+                        <button
+                          type="button"
+                          className={cn(
+                            "w-full grid grid-cols-[1fr_100px_90px_80px_80px_40px] gap-2 px-3 py-3 items-center text-left border-b last:border-0 transition-colors group cursor-pointer",
+                            status
+                              ? "bg-muted/20 opacity-60"
+                              : "hover:bg-muted/30",
                           )}
-                          <span className="text-sm font-medium truncate group-hover:text-violet-600 transition-colors">
-                            {item.eventName}
+                          onClick={() => !status && setSelectedItem(item)}
+                          disabled={!!status}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            {status === "accepted" ? (
+                              <CalendarCheck className="h-4 w-4 text-green-500 shrink-0" />
+                            ) : status === "declined" ? (
+                              <ThumbsDown className="h-4 w-4 text-red-400 shrink-0" />
+                            ) : item.aiSuggestion === "拒绝" ? (
+                              <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse-subtle shrink-0" />
+                            ) : null}
+                            <span
+                              className={cn(
+                                "text-sm font-medium truncate transition-colors",
+                                status
+                                  ? "text-muted-foreground"
+                                  : "group-hover:text-violet-600",
+                              )}
+                            >
+                              {item.eventName}
+                            </span>
+                          </div>
+                          <span className="text-xs text-muted-foreground truncate">
+                            {item.host}
                           </span>
-                        </div>
-                        <span className="text-xs text-muted-foreground truncate">
-                          {item.host}
-                        </span>
-                        <span className="text-xs text-foreground font-tabular">
-                          {item.date}
-                        </span>
-                        <RoiScoreBadge score={item.roiScore} />
-                        <SuggestionBadge suggestion={item.aiSuggestion} />
-                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-violet-500 group-hover:translate-x-0.5 transition-all" />
-                      </button>
-                    </StaggerItem>
-                  ))}
+                          <span className="text-xs text-foreground font-tabular">
+                            {item.date}
+                          </span>
+                          <RoiScoreBadge score={item.roiScore} />
+                          {status ? (
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-[10px] w-fit",
+                                status === "accepted"
+                                  ? "border-green-200 bg-green-50 text-green-700"
+                                  : status === "declined"
+                                    ? "border-red-200 bg-red-50 text-red-700"
+                                    : "border-blue-200 bg-blue-50 text-blue-700",
+                              )}
+                            >
+                              {status === "accepted"
+                                ? "已确认"
+                                : status === "declined"
+                                  ? "已婉拒"
+                                  : "已转发"}
+                            </Badge>
+                          ) : (
+                            <SuggestionBadge suggestion={item.aiSuggestion} />
+                          )}
+                          <ChevronRight
+                            className={cn(
+                              "h-4 w-4 text-muted-foreground transition-all",
+                              !status &&
+                                "group-hover:text-violet-500 group-hover:translate-x-0.5",
+                            )}
+                          />
+                        </button>
+                      </StaggerItem>
+                    );
+                  })}
                 </StaggerContainer>
               </div>
             </CardContent>
@@ -399,14 +374,14 @@ export default function InvitationEval() {
                 <div className="flex gap-2 pt-4">
                   <Button
                     className="flex-1"
-                    onClick={() => {
-                      toast.success(
+                    onClick={() =>
+                      handleProcess(
+                        selectedItem.id,
                         selectedItem.aiSuggestion === "拒绝"
-                          ? "已发送婉拒回复"
-                          : "已确认参加并加入日程",
-                      );
-                      setSelectedItem(null);
-                    }}
+                          ? "declined"
+                          : "accepted",
+                      )
+                    }
                   >
                     {selectedItem.aiSuggestion === "拒绝"
                       ? "确认婉拒"
@@ -414,7 +389,7 @@ export default function InvitationEval() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => toast.success("已转发给秘书处理")}
+                    onClick={() => handleProcess(selectedItem.id, "forwarded")}
                   >
                     转发秘书
                   </Button>

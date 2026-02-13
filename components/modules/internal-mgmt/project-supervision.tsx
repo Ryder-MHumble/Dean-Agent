@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { MoreHorizontal } from "lucide-react"
-import { motion } from "framer-motion"
-import { StaggerContainer, StaggerItem } from "@/components/motion"
-import { toast } from "sonner"
+} from "@/components/ui/tooltip";
+import { MoreHorizontal } from "lucide-react";
+import { motion } from "framer-motion";
+import { StaggerContainer, StaggerItem } from "@/components/motion";
+import { toast } from "sonner";
 
-const months = ["1月", "2月", "3月", "4月", "5月", "6月"]
+const months = ["1月", "2月", "3月", "4月", "5月", "6月"];
 const timelineProjects = [
   {
     name: "量子芯片 Alpha",
@@ -76,7 +76,7 @@ const timelineProjects = [
       },
     ],
   },
-]
+];
 
 const tableProjects = [
   {
@@ -115,7 +115,7 @@ const tableProjects = [
     budget: "¥350万",
     spent: "¥340万",
   },
-]
+];
 
 export default function ProjectSupervision() {
   return (
@@ -289,7 +289,7 @@ export default function ProjectSupervision() {
         <CardContent className="pt-0">
           <table className="w-full">
             <thead>
-              <tr className="border-b text-[11px] text-muted-foreground">
+              <tr className="border-b text-xs uppercase tracking-wider text-muted-foreground">
                 <th className="pb-2 text-left font-medium">项目名称</th>
                 <th className="pb-2 text-left font-medium">状态</th>
                 <th className="pb-2 text-left font-medium">负责人</th>
@@ -355,5 +355,5 @@ export default function ProjectSupervision() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

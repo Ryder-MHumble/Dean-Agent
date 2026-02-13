@@ -108,6 +108,32 @@
   }
 }
 
+/* Responsive: Stack 8+4 grid at smaller screens */
+@media (max-width: 1280px) {
+  .grid-cols-12 > .col-span-8 {
+    grid-column: span 12 / span 12;
+  }
+  .grid-cols-12 > .col-span-4 {
+    grid-column: span 12 / span 12;
+  }
+  .grid-cols-12 > .col-span-7 {
+    grid-column: span 12 / span 12;
+  }
+  .grid-cols-12 > .col-span-5 {
+    grid-column: span 12 / span 12;
+  }
+}
+
+/* Responsive: stat cards to 2 cols on narrower screens */
+@media (max-width: 1024px) {
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

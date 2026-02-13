@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Bot,
   CheckCircle2,
@@ -19,159 +19,80 @@ import {
   Calendar,
   Users,
   FileText,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-
-interface TodoItem {
-  id: string
-  title: string
-  priority: 'urgent' | 'important' | 'normal'
-  deadline?: string
-  completed: boolean
-  actionLabel?: string
-}
-
-interface ScheduleConflict {
-  id: string
-  title: string
-  time: string
-  conflictWith: string
-  suggestion: string
-}
-
-interface AIRecommendation {
-  id: string
-  icon: 'calendar' | 'users' | 'file'
-  title: string
-  description: string
-}
-
-const mockTodoItems: TodoItem[] = [
-  {
-    id: '1',
-    title: '审查伦理委员会报告',
-    priority: 'urgent',
-    deadline: '今天 18:00',
-    completed: false,
-    actionLabel: '开始审阅',
-  },
-  {
-    id: '2',
-    title: '恭喜张教授当选院士',
-    priority: 'important',
-    completed: false,
-    actionLabel: 'AI草稿已就绪',
-  },
-  {
-    id: '3',
-    title: '督办大模型基座项目采购',
-    priority: 'important',
-    deadline: '延期15天',
-    completed: false,
-    actionLabel: '催办负责人',
-  },
-  {
-    id: '4',
-    title: '审阅科技伦理政策影响分析',
-    priority: 'normal',
-    completed: false,
-    actionLabel: '查看AI分析',
-  },
-  {
-    id: '5',
-    title: '处理日程冲突：人才引进委员会',
-    priority: 'important',
-    completed: false,
-    actionLabel: '选择方案',
-  },
-]
-
-const mockScheduleConflict: ScheduleConflict = {
-  id: '1',
-  title: '人才引进委员会',
-  time: '今天 14:00',
-  conflictWith: '部委电话会议',
-  suggestion: '建议授权李副主任处理人才引进委员会',
-}
-
-const mockRecommendations: AIRecommendation[] = [
-  {
-    id: '1',
-    icon: 'file',
-    title: '关注科技伦理治理政策',
-    description: '该政策与我院3个在研项目相关',
-  },
-  {
-    id: '2',
-    icon: 'users',
-    title: '恭喜王教授当选IEEE Fellow',
-    description: 'AI已起草祝贺邮件，点击查看',
-  },
-  {
-    id: '3',
-    icon: 'calendar',
-    title: '北京科创大会邀请',
-    description: 'ROI:95 | 建议接受邀请',
-  },
-]
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type {
+  SecretaryTodoItem,
+  SecretaryScheduleConflict,
+  SecretaryRecommendation,
+} from "@/lib/types/ai-secretary";
+import {
+  mockSecretaryTodos,
+  mockSecretaryConflict,
+  mockSecretaryRecommendations,
+} from "@/lib/mock-data/ai-secretary";
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
-    case 'urgent':
-      return 'bg-red-100 text-red-700'
-    case 'important':
-      return 'bg-orange-100 text-orange-700'
+    case "urgent":
+      return "bg-red-100 text-red-700";
+    case "important":
+      return "bg-orange-100 text-orange-700";
     default:
-      return 'bg-gray-100 text-gray-700'
+      return "bg-gray-100 text-gray-700";
   }
-}
+};
 
 const getRecommendationIcon = (icon: string) => {
   switch (icon) {
-    case 'calendar':
-      return Calendar
-    case 'users':
-      return Users
-    case 'file':
-      return FileText
+    case "calendar":
+      return Calendar;
+    case "users":
+      return Users;
+    case "file":
+      return FileText;
     default:
-      return FileText
+      return FileText;
   }
-}
+};
 
 export default function AISecretarySidebar() {
-  const [todos, setTodos] = useState(mockTodoItems)
-  const [chatInput, setChatInput] = useState('')
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+  const [todos, setTodos] = useState(mockSecretaryTodos);
+  const [chatInput, setChatInput] = useState("");
+  const [expandedSections, setExpandedSections] = useState<
+    Record<string, boolean>
+  >({
     todos: true,
     conflict: true,
     recommendations: true,
-  })
+  });
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
-    }))
-  }
+    }));
+  };
 
   const toggleTodo = (id: string) => {
     setTodos((prev) =>
       prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    )
-  }
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+      ),
+    );
+  };
 
   const handleSendMessage = () => {
     if (chatInput.trim()) {
-      console.log('发送消息:', chatInput)
-      setChatInput('')
+      console.log("发送消息:", chatInput);
+      setChatInput("");
     }
-  }
+  };
 
-  const incompleteTodos = todos.filter((t) => !t.completed)
-  const urgentCount = incompleteTodos.filter((t) => t.priority === 'urgent').length
+  const incompleteTodos = todos.filter((t) => !t.completed);
+  const urgentCount = incompleteTodos.filter(
+    (t) => t.priority === "urgent",
+  ).length;
 
   return (
     <aside className="fixed right-0 top-16 z-30 h-[calc(100vh-64px)] w-[360px] border-l border-border bg-white overflow-hidden flex flex-col">
@@ -196,7 +117,7 @@ export default function AISecretarySidebar() {
           <button
             type="button"
             className="flex items-center justify-between w-full px-4 py-3 hover:bg-muted/50 transition-colors"
-            onClick={() => toggleSection('todos')}
+            onClick={() => toggleSection("todos")}
           >
             <div className="flex items-center gap-2">
               <h4 className="font-medium text-sm">今日待办</h4>
@@ -220,7 +141,7 @@ export default function AISecretarySidebar() {
                     "group flex items-start gap-3 p-3 rounded-lg border transition-all",
                     todo.completed
                       ? "bg-muted/30 border-muted"
-                      : "bg-card border-border hover:border-blue-300 hover:shadow-sm"
+                      : "bg-card border-border hover:border-blue-300 hover:shadow-sm",
                   )}
                 >
                   <Checkbox
@@ -234,9 +155,9 @@ export default function AISecretarySidebar() {
                         className={`text-[10px] ${getPriorityColor(todo.priority)}`}
                         variant="secondary"
                       >
-                        {todo.priority === 'urgent' && '特急'}
-                        {todo.priority === 'important' && '重要'}
-                        {todo.priority === 'normal' && '一般'}
+                        {todo.priority === "urgent" && "特急"}
+                        {todo.priority === "important" && "重要"}
+                        {todo.priority === "normal" && "一般"}
                       </Badge>
                     </div>
                     <p
@@ -244,7 +165,7 @@ export default function AISecretarySidebar() {
                         "text-xs font-medium mb-1",
                         todo.completed
                           ? "line-through text-muted-foreground"
-                          : "text-foreground"
+                          : "text-foreground",
                       )}
                     >
                       {todo.title}
@@ -276,11 +197,14 @@ export default function AISecretarySidebar() {
           <button
             type="button"
             className="flex items-center justify-between w-full px-4 py-3 hover:bg-muted/50 transition-colors"
-            onClick={() => toggleSection('conflict')}
+            onClick={() => toggleSection("conflict")}
           >
             <div className="flex items-center gap-2">
               <h4 className="font-medium text-sm">日程冲突提醒</h4>
-              <Badge variant="secondary" className="bg-orange-100 text-orange-700 text-xs">
+              <Badge
+                variant="secondary"
+                className="bg-orange-100 text-orange-700 text-xs"
+              >
                 1个
               </Badge>
             </div>
@@ -298,17 +222,17 @@ export default function AISecretarySidebar() {
                   <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-xs font-medium text-foreground mb-1">
-                      {mockScheduleConflict.title}
+                      {mockSecretaryConflict.title}
                     </p>
                     <p className="text-[10px] text-muted-foreground mb-1">
-                      {mockScheduleConflict.time}
+                      {mockSecretaryConflict.time}
                     </p>
                     <p className="text-[10px] text-muted-foreground mb-2">
-                      冲突：{mockScheduleConflict.conflictWith}
+                      冲突：{mockSecretaryConflict.conflictWith}
                     </p>
                     <div className="p-2 rounded bg-white/60 border border-orange-200 mb-2">
                       <p className="text-[10px] text-foreground">
-                        💡 {mockScheduleConflict.suggestion}
+                        💡 {mockSecretaryConflict.suggestion}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -335,12 +259,12 @@ export default function AISecretarySidebar() {
           <button
             type="button"
             className="flex items-center justify-between w-full px-4 py-3 hover:bg-muted/50 transition-colors"
-            onClick={() => toggleSection('recommendations')}
+            onClick={() => toggleSection("recommendations")}
           >
             <div className="flex items-center gap-2">
               <h4 className="font-medium text-sm">AI 建议行动</h4>
               <Badge variant="secondary" className="text-xs">
-                {mockRecommendations.length}条
+                {mockSecretaryRecommendations.length}条
               </Badge>
             </div>
             {expandedSections.recommendations ? (
@@ -352,8 +276,8 @@ export default function AISecretarySidebar() {
 
           {expandedSections.recommendations && (
             <div className="px-4 pb-4 space-y-2">
-              {mockRecommendations.map((rec) => {
-                const Icon = getRecommendationIcon(rec.icon)
+              {mockSecretaryRecommendations.map((rec) => {
+                const Icon = getRecommendationIcon(rec.icon);
                 return (
                   <div
                     key={rec.id}
@@ -371,7 +295,7 @@ export default function AISecretarySidebar() {
                       </p>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           )}
@@ -392,8 +316,8 @@ export default function AISecretarySidebar() {
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleSendMessage()
+              if (e.key === "Enter") {
+                handleSendMessage();
               }
             }}
             className="text-xs h-9"
@@ -409,5 +333,5 @@ export default function AISecretarySidebar() {
         </div>
       </div>
     </aside>
-  )
+  );
 }

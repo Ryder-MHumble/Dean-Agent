@@ -30,7 +30,7 @@ export default function ProjectInfoTable() {
       <CardContent className="pt-0">
         <table className="w-full">
           <thead>
-            <tr className="border-b text-[11px] text-muted-foreground">
+            <tr className="border-b text-xs uppercase tracking-wider text-muted-foreground">
               <th className="pb-2 text-left font-medium">项目名称</th>
               <th className="pb-2 text-left font-medium">状态</th>
               <th className="pb-2 text-left font-medium">负责人</th>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Bell, HelpCircle, Settings, ChevronLeft } from "lucide-react";
+import { Bell, HelpCircle, Settings, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { navGroups } from "@/lib/mock-data/navigation";
+import { mockNotifications } from "@/lib/mock-data/app-shell";
 
 export default function AppShell({
   activePage,
@@ -123,17 +124,6 @@ export default function AppShell({
                               : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                           )}
                         >
-                          {isActive && (
-                            <motion.span
-                              layoutId="nav-active-indicator"
-                              className="absolute -left-3 top-1/2 -translate-y-1/2 h-7 w-[3px] rounded-full bg-gradient-to-b from-blue-500 to-indigo-600"
-                              transition={{
-                                type: "spring",
-                                stiffness: 300,
-                                damping: 30,
-                              }}
-                            />
-                          )}
                           <item.icon
                             className={cn(
                               "h-[18px] w-[18px] shrink-0 transition-colors",
@@ -236,10 +226,16 @@ export default function AppShell({
 export function TopBar({
   title,
   subtitle,
+  onNavigate,
+  searchSlot,
 }: {
   title: string;
   subtitle?: string;
+  onNavigate?: (page: string) => void;
+  searchSlot?: React.ReactNode;
 }) {
+  const [showNotifications, setShowNotifications] = useState(false);
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/40 bg-white/70 px-6 backdrop-blur-md shadow-sm">
       <div>
@@ -250,27 +246,78 @@ export function TopBar({
       </div>
 
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          className="flex h-9 w-72 items-center gap-2 rounded-xl border border-border/50 bg-muted/30 px-3 text-sm text-muted-foreground transition-all duration-200 hover:bg-white hover:shadow-sm hover:border-blue-200"
-        >
-          <Search className="h-4 w-4" />
-          <span className="flex-1 text-left">
-            全局搜索：政策、报告、联系人...
-          </span>
-          <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
-            <span className="text-xs">⌘</span>K
-          </kbd>
-        </button>
+        {searchSlot}
 
-        <button
-          type="button"
-          className="relative rounded-xl p-2 text-muted-foreground hover:bg-muted/60 transition-colors"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 animate-ping opacity-75" />
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative rounded-xl p-2 text-muted-foreground hover:bg-muted/60 transition-colors"
+          >
+            <Bell className="h-5 w-5" />
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 animate-ping opacity-75" />
+          </button>
+
+          {showNotifications && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowNotifications(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-xl border border-border/60 bg-white shadow-elevated overflow-hidden">
+                <div className="px-4 py-3 border-b border-border/40 bg-muted/20">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">通知中心</h3>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 font-medium">
+                      5 条未读
+                    </span>
+                  </div>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {mockNotifications.map((notif, i) => (
+                    <button
+                      key={i}
+                      className="w-full text-left px-4 py-3 hover:bg-muted/30 transition-colors border-b border-border/20 last:border-0"
+                      onClick={() => {
+                        setShowNotifications(false);
+                        onNavigate?.(notif.module);
+                      }}
+                    >
+                      <div className="flex items-start gap-2">
+                        <span
+                          className={cn(
+                            "mt-1.5 h-2 w-2 rounded-full flex-shrink-0",
+                            notif.type === "urgent" && "bg-red-500",
+                            notif.type === "deadline" && "bg-amber-500",
+                            notif.type === "warning" && "bg-orange-500",
+                            notif.type === "info" && "bg-blue-500",
+                          )}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {notif.title}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            {notif.time}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <div className="px-4 py-2.5 border-t border-border/40 bg-muted/20">
+                  <button
+                    className="text-xs text-blue-500 hover:text-blue-600 font-medium"
+                    onClick={() => setShowNotifications(false)}
+                  >
+                    查看全部通知
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         <button
           type="button"

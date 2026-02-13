@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 import {
   Building2,
   Eye,
@@ -18,76 +18,43 @@ import {
   Sparkles,
   ChevronRight,
   FileText,
-} from "lucide-react"
-import { MotionNumber, StaggerContainer, StaggerItem } from "@/components/motion"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
-
-interface PeerInstitution {
-  id: string
-  name: string
-  activityLevel: number
-  latestAction: string
-  actionType: string
-  threatLevel: "critical" | "warning" | "normal"
-  recentCount: number
-  aiInsight: string
-  detail: string
-}
-
-const mockPeers: PeerInstitution[] = [
-  {
-    id: "c1",
-    name: "清华AIR",
-    activityLevel: 92,
-    latestAction: "发布具身智能实验室2篇ICRA论文",
-    actionType: "科研成果",
-    threatLevel: "critical",
-    recentCount: 5,
-    aiInsight: "清华AIR在具身智能方向形成明显领先，该团队已扩至15人。建议密切关注其研究路线，评估合作可能性。",
-    detail: "清华AIR近期在具身智能、多模态大模型方向密集产出。已发表ICRA 2024论文2篇，获批国家级项目1项，团队规模扩至15人。",
-  },
-  {
-    id: "c2",
-    name: "智源研究院",
-    activityLevel: 78,
-    latestAction: "获批算力基础设施建设资金",
-    actionType: "资金动态",
-    threatLevel: "warning",
-    recentCount: 3,
-    aiInsight: "智源在算力方面获得大量资金支持。我院需关注其算力开放策略是否影响我院合作方获取资源。",
-    detail: "智源研究院近期获批过亿资金用于算力基础设施建设，预计新增10000 GPU小时算力。",
-  },
-  {
-    id: "c3",
-    name: "北大AI Lab",
-    activityLevel: 55,
-    latestAction: "NLP团队发布ChatBench评测基准",
-    actionType: "学术发布",
-    threatLevel: "normal",
-    recentCount: 2,
-    aiInsight: "北大AI Lab在传统NLP领域保持稳定产出，整体威胁可控。其新发布的评测基准可作为我院论文引用参考。",
-    detail: "北大AI Lab近期发布ChatBench大模型评测基准，在NLP领域保持稳定产出，团队规模基本不变。",
-  },
-]
+} from "lucide-react";
+import {
+  MotionNumber,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/motion";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import type { PeerInstitution } from "@/lib/types/university-eco";
+import { mockPeers } from "@/lib/mock-data/university-eco";
 
 function ThreatBadge({ level }: { level: PeerInstitution["threatLevel"] }) {
   const config = {
-    critical: { color: "bg-red-100 text-red-700 border-red-200", label: "重点关注" },
-    warning: { color: "bg-amber-100 text-amber-700 border-amber-200", label: "需关注" },
-    normal: { color: "bg-green-100 text-green-700 border-green-200", label: "可控" },
-  }
-  const c = config[level]
+    critical: {
+      color: "bg-red-100 text-red-700 border-red-200",
+      label: "重点关注",
+    },
+    warning: {
+      color: "bg-amber-100 text-amber-700 border-amber-200",
+      label: "需关注",
+    },
+    normal: {
+      color: "bg-green-100 text-green-700 border-green-200",
+      label: "可控",
+    },
+  };
+  const c = config[level];
   return (
     <Badge variant="outline" className={cn("text-[11px] font-medium", c.color)}>
       {c.label}
     </Badge>
-  )
+  );
 }
 
 function ActivityBar({ level }: { level: number }) {
-  const segments = 5
-  const filled = Math.round((level / 100) * segments)
+  const segments = 5;
+  const filled = Math.round((level / 100) * segments);
   return (
     <div className="flex items-center gap-0.5">
       {Array.from({ length: segments }).map((_, i) => (
@@ -95,18 +62,28 @@ function ActivityBar({ level }: { level: number }) {
           key={i}
           className={cn(
             "h-3 w-1.5 rounded-sm transition-colors",
-            i < filled ? (level >= 80 ? "bg-red-400" : level >= 60 ? "bg-amber-400" : "bg-green-400") : "bg-muted"
+            i < filled
+              ? level >= 80
+                ? "bg-red-400"
+                : level >= 60
+                  ? "bg-amber-400"
+                  : "bg-green-400"
+              : "bg-muted",
           )}
         />
       ))}
     </div>
-  )
+  );
 }
 
 export default function PeerDynamics() {
-  const [selectedPeer, setSelectedPeer] = useState<PeerInstitution | null>(null)
-  const criticalCount = mockPeers.filter((c) => c.threatLevel === "critical").length
-  const totalActions = mockPeers.reduce((sum, c) => sum + c.recentCount, 0)
+  const [selectedPeer, setSelectedPeer] = useState<PeerInstitution | null>(
+    null,
+  );
+  const criticalCount = mockPeers.filter(
+    (c) => c.threatLevel === "critical",
+  ).length;
+  const totalActions = mockPeers.reduce((sum, c) => sum + c.recentCount, 0);
 
   return (
     <>
@@ -157,8 +134,12 @@ export default function PeerDynamics() {
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold">同行机构态势总览</CardTitle>
-                <Badge variant="secondary" className="text-[10px]">按关注度排序</Badge>
+                <CardTitle className="text-sm font-semibold">
+                  同行机构态势总览
+                </CardTitle>
+                <Badge variant="secondary" className="text-[10px]">
+                  按关注度排序
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
@@ -193,9 +174,18 @@ export default function PeerDynamics() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 ml-[52px]">
-                        <Badge variant="outline" className="text-[10px]">{peer.actionType}</Badge>
-                        <span className="text-xs text-muted-foreground">{peer.latestAction}</span>
-                        <Badge variant="secondary" className="text-[10px] ml-auto">{peer.recentCount}条动态</Badge>
+                        <Badge variant="outline" className="text-[10px]">
+                          {peer.actionType}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {peer.latestAction}
+                        </span>
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] ml-auto"
+                        >
+                          {peer.recentCount}条动态
+                        </Badge>
                       </div>
                     </button>
                   </StaggerItem>
@@ -213,12 +203,15 @@ export default function PeerDynamics() {
                 <span className="text-sm font-semibold">AI 同行态势分析</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                清华AIR在具身智能方向形成领先优势，需重点关注。智源在算力基础设施方面投入巨大。北大AI Lab在传统NLP领域保持稳定。建议重点关注具身智能方向的人才储备和资金争取。
+                清华AIR在具身智能方向形成领先优势，需重点关注。智源在算力基础设施方面投入巨大。北大AI
+                Lab在传统NLP领域保持稳定。建议重点关注具身智能方向的人才储备和资金争取。
               </p>
               <div className="space-y-2 mb-4">
                 <div className="flex items-start gap-2 text-xs">
                   <div className="h-1.5 w-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
-                  <span className="text-slate-300">清华AIR具身智能团队扩至15人</span>
+                  <span className="text-slate-300">
+                    清华AIR具身智能团队扩至15人
+                  </span>
                 </div>
                 <div className="flex items-start gap-2 text-xs">
                   <div className="h-1.5 w-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
@@ -252,26 +245,42 @@ export default function PeerDynamics() {
                   <ThreatBadge level={selectedPeer.threatLevel} />
                 </SheetTitle>
                 <SheetDescription>
-                  活跃度: {selectedPeer.activityLevel}/100 · 近期动态: {selectedPeer.recentCount}条
+                  活跃度: {selectedPeer.activityLevel}/100 · 近期动态:{" "}
+                  {selectedPeer.recentCount}条
                 </SheetDescription>
               </SheetHeader>
               <div className="mt-6 space-y-4">
                 <div>
                   <h4 className="text-sm font-semibold mb-2">详细分析</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{selectedPeer.detail}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {selectedPeer.detail}
+                  </p>
                 </div>
                 <div className="rounded-lg bg-indigo-50 border border-indigo-100 p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="h-4 w-4 text-indigo-500" />
-                    <span className="text-sm font-semibold text-indigo-700">AI 建议</span>
+                    <span className="text-sm font-semibold text-indigo-700">
+                      AI 建议
+                    </span>
                   </div>
-                  <p className="text-sm text-indigo-700/80">{selectedPeer.aiInsight}</p>
+                  <p className="text-sm text-indigo-700/80">
+                    {selectedPeer.aiInsight}
+                  </p>
                 </div>
                 <div className="flex gap-2 pt-4">
-                  <Button className="flex-1" onClick={() => { toast.success("已设置持续监控"); setSelectedPeer(null) }}>
+                  <Button
+                    className="flex-1"
+                    onClick={() => {
+                      toast.success("已设置持续监控");
+                      setSelectedPeer(null);
+                    }}
+                  >
                     设置监控
                   </Button>
-                  <Button variant="outline" onClick={() => toast.success("同行分析报告已生成")}>
+                  <Button
+                    variant="outline"
+                    onClick={() => toast.success("同行分析报告已生成")}
+                  >
                     生成报告
                   </Button>
                 </div>
@@ -281,5 +290,5 @@ export default function PeerDynamics() {
         </SheetContent>
       </Sheet>
     </>
-  )
+  );
 }

@@ -11,6 +11,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import DataFreshness from "@/components/shared/data-freshness";
 import {
   DollarSign,
   TrendingDown,
@@ -28,89 +29,8 @@ import {
 } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-interface BudgetItem {
-  id: string;
-  department: string;
-  annualBudget: number;
-  spent: number;
-  executionRate: number;
-  status: "normal" | "warning" | "danger";
-  statusLabel: string;
-  recentChange: string;
-  aiInsight: string;
-  detail: string;
-}
-
-const mockBudgets: BudgetItem[] = [
-  {
-    id: "b1",
-    department: "AI & 机器人实验室",
-    annualBudget: 2800,
-    spent: 980,
-    executionRate: 35,
-    status: "normal",
-    statusLabel: "正常",
-    recentChange: "本月支出120万（设备采购）",
-    aiInsight: "预算执行节奏正常，Q2有大额设备采购计划，建议提前启动审批流程。",
-    detail:
-      "年度预算2800万，主要用于算力平台建设、GPU集群扩容和实验室改造。当前已执行980万，执行率35%。Q2计划采购新一批A100 GPU集群（预算800万）。",
-  },
-  {
-    id: "b2",
-    department: "量子计算中心",
-    annualBudget: 1500,
-    spent: 1425,
-    executionRate: 95,
-    status: "danger",
-    statusLabel: "超支预警",
-    recentChange: "超支提示：低温设备维修追加150万",
-    aiInsight:
-      "已超支预警，低温设备维修费用超出预期。建议紧急协调校级应急资金或从其他中心调剂。",
-    detail:
-      "年度预算1500万，因低温设备频繁故障已追加维修费用150万。若不及时调剂，预计Q2将出现资金断裂。建议与校财务处协商紧急拨款。",
-  },
-  {
-    id: "b3",
-    department: "先进材料研究院",
-    annualBudget: 1200,
-    spent: 240,
-    executionRate: 20,
-    status: "warning",
-    statusLabel: "执行滞后",
-    recentChange: "采购审批卡在流程中",
-    aiInsight:
-      "执行率仅20%，远低于季度目标。主因是3个大额采购审批流程停滞。建议院长直接推动。",
-    detail:
-      "年度预算1200万，主要用于材料采购和仪器设备。当前执行滞后，3个大额采购（合计450万）审批停滞在采购处。",
-  },
-  {
-    id: "b4",
-    department: "科研项目专项基金",
-    annualBudget: 1800,
-    spent: 720,
-    executionRate: 40,
-    status: "normal",
-    statusLabel: "正常",
-    recentChange: "新增2个国家级项目配套",
-    aiInsight: "执行率正常，新增的国家级项目配套资金已到位，建议加快项目启动。",
-    detail:
-      "年度预算1800万，覆盖院级、省部级和国家级项目配套。本月新增2个国家级项目配套共350万。",
-  },
-  {
-    id: "b5",
-    department: "行政与人员经费",
-    annualBudget: 1200,
-    spent: 600,
-    executionRate: 50,
-    status: "normal",
-    statusLabel: "正常",
-    recentChange: "人才引进签约奖金支出",
-    aiInsight: "人员经费执行正常，但人才引进计划可能导致Q3-Q4压力增大。",
-    detail:
-      "年度预算1200万，包含人员工资、绩效奖金和人才引进费用。本月因引进1名海外人才支出签约奖金50万。",
-  },
-];
+import type { BudgetItem } from "@/lib/types/internal-mgmt";
+import { mockBudgets } from "@/lib/mock-data/internal-mgmt";
 
 function BudgetBar({ rate, status }: { rate: number; status: string }) {
   const color =
@@ -222,9 +142,12 @@ export default function Finance() {
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold">
-                  各部门预算执行
-                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-sm font-semibold">
+                    各部门预算执行
+                  </CardTitle>
+                  <DataFreshness updatedAt={new Date(Date.now() - 3600000)} />
+                </div>
                 <Badge variant="secondary" className="text-[10px]">
                   按执行状态排序
                 </Badge>

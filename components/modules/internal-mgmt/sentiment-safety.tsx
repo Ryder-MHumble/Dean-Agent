@@ -1,10 +1,11 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { toast } from "sonner"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { sentimentData } from "@/lib/mock-data/internal-mgmt";
 
 export default function SentimentSafety() {
-  const score = 78
+  const score = sentimentData.score;
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-12 gap-5">
@@ -79,19 +80,19 @@ export default function SentimentSafety() {
                 <div className="rounded-lg border border-border p-3 text-center">
                   <p className="text-[11px] text-blue-600">正面</p>
                   <p className="mt-0.5 text-lg font-bold text-foreground">
-                    65%
+                    {sentimentData.positive}%
                   </p>
                 </div>
                 <div className="rounded-lg border border-border p-3 text-center">
                   <p className="text-[11px] text-muted-foreground">中立</p>
                   <p className="mt-0.5 text-lg font-bold text-foreground">
-                    20%
+                    {sentimentData.neutral}%
                   </p>
                 </div>
                 <div className="rounded-lg border border-border p-3 text-center">
                   <p className="text-[11px] text-red-500">负面</p>
                   <p className="mt-0.5 text-lg font-bold text-foreground">
-                    15%
+                    {sentimentData.negative}%
                   </p>
                 </div>
               </div>
@@ -167,5 +168,5 @@ export default function SentimentSafety() {
         </div>
       </div>
     </div>
-  )
+  );
 }

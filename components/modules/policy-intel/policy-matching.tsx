@@ -27,80 +27,9 @@ import {
 } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-interface PolicyItem {
-  id: string;
-  name: string;
-  agency: string;
-  agencyType: "national" | "beijing" | "ministry";
-  matchScore: number;
-  funding: string;
-  deadline: string;
-  daysLeft: number;
-  status: "urgent" | "active" | "tracking";
-  aiInsight: string;
-  detail: string;
-}
-
-const mockPolicies: PolicyItem[] = [
-  {
-    id: "p1",
-    name: "算力基础设施补贴政策",
-    agency: "北京科委",
-    agencyType: "beijing",
-    matchScore: 98,
-    funding: "500-1000万",
-    deadline: "2月17日",
-    daysLeft: 5,
-    status: "urgent",
-    aiInsight:
-      "与我院算力平台二期建设高度匹配，建议李副主任牵头、科研处配合紧急组织申报。",
-    detail:
-      "北京科委发布的「算力基础设施补贴政策」旨在支持高校和研究机构建设算力平台。我院算力平台二期建设规划与该政策高度匹配，预估可申请500-1000万资金支持。申报截止时间为下周五，需紧急组织申报材料。建议重点突出我院在大模型训练方面的算力需求和已有基础。",
-  },
-  {
-    id: "p2",
-    name: "新一代人工智能重大专项",
-    agency: "科技部",
-    agencyType: "national",
-    matchScore: 85,
-    funding: "1000-3000万",
-    deadline: "3月15日",
-    daysLeft: 31,
-    status: "active",
-    aiInsight: "需王教授确认技术路线图，重点包装多模态大模型方向的成果。",
-    detail:
-      "科技部「新一代人工智能重大专项」重点支持大模型、具身智能、AI4Science三大方向。我院在多模态大模型方向有显著优势，建议以此为主攻方向申报。需注意：该专项要求有明确的产业化合作伙伴。",
-  },
-  {
-    id: "p3",
-    name: "教育部高校AI实验室建设基金",
-    agency: "教育部",
-    agencyType: "ministry",
-    matchScore: 72,
-    funding: "200-500万",
-    deadline: "4月30日",
-    daysLeft: 77,
-    status: "tracking",
-    aiInsight: "可作为补充资金来源，建议关注但无需紧急行动。",
-    detail:
-      "教育部面向双一流高校的AI实验室建设专项基金，重点支持教学型AI实验室的建设和升级。我院可作为补充申请。",
-  },
-  {
-    id: "p4",
-    name: "北京市海淀区AI产业扶持计划",
-    agency: "海淀区政府",
-    agencyType: "beijing",
-    matchScore: 65,
-    funding: "100-300万",
-    deadline: "5月15日",
-    daysLeft: 92,
-    status: "tracking",
-    aiInsight: "区级政策，资金量较小但申报难度低，可安排科研处日常跟进。",
-    detail:
-      "海淀区政府针对区内AI相关机构的产业扶持计划，重点支持产学研合作项目。",
-  },
-];
+import DataFreshness from "@/components/shared/data-freshness";
+import type { PolicyItem } from "@/lib/types/policy-intel";
+import { mockPolicyMatches } from "@/lib/mock-data/policy-intel";
 
 function MatchBar({ score }: { score: number }) {
   const color =
@@ -138,12 +67,14 @@ function MatchBar({ score }: { score: number }) {
 export default function PolicyMatching() {
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyItem | null>(null);
   const [focusedPolicy, setFocusedPolicy] = useState<PolicyItem>(
-    mockPolicies[0],
+    mockPolicyMatches[0],
   );
-  const urgentCount = mockPolicies.filter((p) => p.status === "urgent").length;
+  const urgentCount = mockPolicyMatches.filter(
+    (p) => p.status === "urgent",
+  ).length;
   const avgMatch = Math.round(
-    mockPolicies.reduce((sum, p) => sum + p.matchScore, 0) /
-      mockPolicies.length,
+    mockPolicyMatches.reduce((sum, p) => sum + p.matchScore, 0) /
+      mockPolicyMatches.length,
   );
 
   return (
@@ -157,7 +88,7 @@ export default function PolicyMatching() {
             <div>
               <p className="text-[11px] text-muted-foreground">匹配政策</p>
               <p className="text-xl font-bold font-tabular">
-                <MotionNumber value={mockPolicies.length} />
+                <MotionNumber value={mockPolicyMatches.length} />
               </p>
             </div>
           </CardContent>
@@ -195,9 +126,12 @@ export default function PolicyMatching() {
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold">
-                  政策机会列表
-                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-sm font-semibold">
+                    政策机会列表
+                  </CardTitle>
+                  <DataFreshness updatedAt={new Date(Date.now() - 1800000)} />
+                </div>
                 <Badge variant="secondary" className="text-[10px]">
                   按匹配度排序
                 </Badge>
@@ -214,7 +148,7 @@ export default function PolicyMatching() {
                   <span></span>
                 </div>
                 <StaggerContainer>
-                  {mockPolicies.map((policy) => (
+                  {mockPolicyMatches.map((policy) => (
                     <StaggerItem key={policy.id}>
                       <button
                         type="button"

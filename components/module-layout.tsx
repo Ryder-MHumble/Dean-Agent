@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MotionCard } from "@/components/motion"
-import type { LucideIcon } from "lucide-react"
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MotionCard } from "@/components/motion";
+import type { LucideIcon } from "lucide-react";
 
 export interface SubPageConfig {
-  id: string
-  label: string
-  icon: LucideIcon
-  component: React.ComponentType
-  badge?: number
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  component: React.ComponentType;
+  badge?: number;
 }
 
 interface ModuleLayoutProps {
-  subPages: SubPageConfig[]
-  defaultSubPage?: string
-  children?: React.ReactNode
+  subPages: SubPageConfig[];
+  defaultSubPage?: string;
+  children?: React.ReactNode;
 }
 
 export default function ModuleLayout({
@@ -24,8 +24,8 @@ export default function ModuleLayout({
   defaultSubPage,
 }: ModuleLayoutProps) {
   const [activeTab, setActiveTab] = useState(
-    defaultSubPage || subPages[0]?.id || ""
-  )
+    defaultSubPage || subPages[0]?.id || "",
+  );
 
   return (
     <div className="p-5 space-y-4">
@@ -35,15 +35,15 @@ export default function ModuleLayout({
           onValueChange={setActiveTab}
           className="space-y-4"
         >
-          <div className="rounded-xl bg-muted/30 p-1">
+          <div className="rounded-xl bg-muted/30 p-1 overflow-x-auto">
             <TabsList
-              className="grid w-full bg-transparent h-auto gap-1"
+              className="grid w-full bg-transparent h-auto gap-1 min-w-max lg:min-w-0"
               style={{
                 gridTemplateColumns: `repeat(${subPages.length}, minmax(0, 1fr))`,
               }}
             >
               {subPages.map((page) => {
-                const Icon = page.icon
+                const Icon = page.icon;
                 return (
                   <TabsTrigger
                     key={page.id}
@@ -58,21 +58,21 @@ export default function ModuleLayout({
                       </span>
                     )}
                   </TabsTrigger>
-                )
+                );
               })}
             </TabsList>
           </div>
 
           {subPages.map((page) => {
-            const Component = page.component
+            const Component = page.component;
             return (
               <TabsContent key={page.id} value={page.id} className="mt-4">
                 <Component />
               </TabsContent>
-            )
+            );
           })}
         </Tabs>
       </MotionCard>
     </div>
-  )
+  );
 }
