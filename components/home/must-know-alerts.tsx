@@ -1,59 +1,72 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
-import { ArrowRight, AlertTriangle, Clock, DollarSign, TrendingUp, FileText, User, CheckCircle2 } from "lucide-react"
-import { StaggerContainer, StaggerItem } from "@/components/motion"
-import { cn } from "@/lib/utils"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card";
+import {
+  ArrowRight,
+  AlertTriangle,
+  Clock,
+  DollarSign,
+  TrendingUp,
+  FileText,
+  User,
+  CheckCircle2,
+} from "lucide-react";
+import { StaggerContainer, StaggerItem } from "@/components/motion";
+import { cn } from "@/lib/utils";
 import {
   type PriorityItemWithScore,
   getCategoryBadge,
   getActionInfo,
   getUrgencyStatus,
   getPriorityBadge,
-} from "@/lib/priority-scoring"
+} from "@/lib/priority-scoring";
 
 interface MustKnowAlertsProps {
-  alerts: PriorityItemWithScore[]
-  onAlertClick?: (alertId: string) => void
-  onActionClick?: (alertId: string, actionType: string) => void
+  alerts: PriorityItemWithScore[];
+  onAlertClick?: (alertId: string) => void;
+  onActionClick?: (alertId: string, actionType: string) => void;
 }
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
-    case 'risk':
-      return AlertTriangle
-    case 'deadline':
-      return Clock
-    case 'finance':
-      return DollarSign
-    case 'opportunity':
-      return TrendingUp
-    case 'supervision':
-      return FileText
+    case "risk":
+      return AlertTriangle;
+    case "deadline":
+      return Clock;
+    case "finance":
+      return DollarSign;
+    case "opportunity":
+      return TrendingUp;
+    case "supervision":
+      return FileText;
     default:
-      return AlertTriangle
+      return AlertTriangle;
   }
-}
+};
 
 const getCategoryBorderColor = (category: string) => {
   switch (category) {
-    case 'risk':
-      return 'border-l-red-500'
-    case 'deadline':
-      return 'border-l-amber-500'
-    case 'finance':
-      return 'border-l-orange-500'
-    case 'opportunity':
-      return 'border-l-green-500'
-    case 'supervision':
-      return 'border-l-blue-500'
+    case "risk":
+      return "border-l-red-500";
+    case "deadline":
+      return "border-l-amber-500";
+    case "finance":
+      return "border-l-orange-500";
+    case "opportunity":
+      return "border-l-green-500";
+    case "supervision":
+      return "border-l-blue-500";
     default:
-      return 'border-l-gray-500'
+      return "border-l-gray-500";
   }
-}
+};
 
 export default function MustKnowAlerts({
   alerts,
@@ -87,13 +100,13 @@ export default function MustKnowAlerts({
         ) : (
           <StaggerContainer className="space-y-2">
             {alerts.map((alert) => {
-              const categoryBadge = getCategoryBadge(alert.category)
-              const actionInfo = getActionInfo(alert.actionType)
-              const priorityBadge = getPriorityBadge(alert.priorityScore)
-              const urgencyStatus = getUrgencyStatus(alert.deadline)
-              const CategoryIcon = getCategoryIcon(alert.category)
-              const borderColor = getCategoryBorderColor(alert.category)
-              const isUrgent = alert.category === 'risk'
+              const categoryBadge = getCategoryBadge(alert.category);
+              const actionInfo = getActionInfo(alert.actionType);
+              const priorityBadge = getPriorityBadge(alert.priorityScore);
+              const urgencyStatus = getUrgencyStatus(alert.deadline);
+              const CategoryIcon = getCategoryIcon(alert.category);
+              const borderColor = getCategoryBorderColor(alert.category);
+              const isUrgent = alert.category === "risk";
 
               return (
                 <StaggerItem key={alert.id}>
@@ -107,16 +120,20 @@ export default function MustKnowAlerts({
                           "bg-white hover:translate-x-0.5",
                           "border-l-[3px]",
                           borderColor,
-                          isUrgent && "animate-pulse-subtle"
+                          isUrgent && "animate-pulse-subtle",
                         )}
                         onClick={() => onAlertClick?.(alert.id)}
                       >
                         {/* Left: Category Icon */}
-                        <div className={cn(
-                          "flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-md",
-                          categoryBadge.bgColor
-                        )}>
-                          <CategoryIcon className={cn("h-4 w-4", categoryBadge.color)} />
+                        <div
+                          className={cn(
+                            "flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-md",
+                            categoryBadge.bgColor,
+                          )}
+                        >
+                          <CategoryIcon
+                            className={cn("h-4 w-4", categoryBadge.color)}
+                          />
                         </div>
 
                         {/* Center: Title + inline metadata */}
@@ -125,7 +142,12 @@ export default function MustKnowAlerts({
                             {alert.title}
                           </span>
                           {alert.deadline && (
-                            <span className={cn("text-xs whitespace-nowrap flex-shrink-0", urgencyStatus.color)}>
+                            <span
+                              className={cn(
+                                "text-xs whitespace-nowrap flex-shrink-0",
+                                urgencyStatus.color,
+                              )}
+                            >
                               {urgencyStatus.icon} {urgencyStatus.text}
                             </span>
                           )}
@@ -134,28 +156,36 @@ export default function MustKnowAlerts({
                         {/* Right: Badges + Action Button */}
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           <Badge
-                            className={cn("text-[10px] px-1.5 py-0", priorityBadge.bgColor, priorityBadge.color)}
+                            className={cn(
+                              "text-[10px] px-1.5 py-0",
+                              priorityBadge.bgColor,
+                              priorityBadge.color,
+                            )}
                             variant="secondary"
                           >
                             {priorityBadge.text}
                           </Badge>
                           <Badge
-                            className={cn("text-[10px] px-1.5 py-0", categoryBadge.bgColor, categoryBadge.color)}
+                            className={cn(
+                              "text-[10px] px-1.5 py-0",
+                              categoryBadge.bgColor,
+                              categoryBadge.color,
+                            )}
                             variant="secondary"
                           >
                             {categoryBadge.text}
                           </Badge>
-                          {alert.actionType !== 'fyi' ? (
+                          {alert.actionType !== "fyi" ? (
                             <Button
                               size="sm"
                               className={cn(
                                 "h-7 text-xs px-2.5 active:scale-95 transition-all duration-150",
                                 actionInfo.bgColor,
-                                actionInfo.color
+                                actionInfo.color,
                               )}
                               onClick={(e) => {
-                                e.stopPropagation()
-                                onActionClick?.(alert.id, alert.actionType)
+                                e.stopPropagation();
+                                onActionClick?.(alert.id, alert.actionType);
                               }}
                             >
                               {actionInfo.text}
@@ -167,8 +197,8 @@ export default function MustKnowAlerts({
                               variant="ghost"
                               className="h-7 text-xs px-2.5 active:scale-95 transition-all duration-150"
                               onClick={(e) => {
-                                e.stopPropagation()
-                                onAlertClick?.(alert.id)
+                                e.stopPropagation();
+                                onAlertClick?.(alert.id);
                               }}
                             >
                               查看
@@ -188,7 +218,12 @@ export default function MustKnowAlerts({
                       <div className="space-y-3">
                         {/* Title row */}
                         <div className="flex items-start gap-2">
-                          <CategoryIcon className={cn("h-4 w-4 mt-0.5 flex-shrink-0", categoryBadge.color)} />
+                          <CategoryIcon
+                            className={cn(
+                              "h-4 w-4 mt-0.5 flex-shrink-0",
+                              categoryBadge.color,
+                            )}
+                          />
                           <h4 className="text-sm font-semibold text-foreground leading-tight">
                             {alert.title}
                           </h4>
@@ -229,11 +264,11 @@ export default function MustKnowAlerts({
                     </HoverCardContent>
                   </HoverCard>
                 </StaggerItem>
-              )
+              );
             })}
           </StaggerContainer>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

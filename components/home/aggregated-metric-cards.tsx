@@ -1,14 +1,13 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Radar, Building2, Users, Calendar } from "lucide-react"
+import { ArrowRight, FileText, Cpu, Globe, GraduationCap, Building, Users, Calendar } from "lucide-react"
 import { StaggerContainer, StaggerItem } from "@/components/motion"
 
 export interface MetricCardData {
   id: string
   title: string
-  icon: 'radar' | 'building' | 'users' | 'calendar'
+  icon: 'policy' | 'tech' | 'talent' | 'university' | 'building' | 'users' | 'calendar'
   metrics: {
     label: string
     value: string | number
@@ -23,54 +22,73 @@ interface AggregatedMetricCardsProps {
 
 const getIcon = (icon: string) => {
   switch (icon) {
-    case 'radar':
-      return Radar
+    case 'policy':
+      return FileText
+    case 'tech':
+      return Cpu
+    case 'talent':
+      return Globe
+    case 'university':
+      return GraduationCap
     case 'building':
-      return Building2
+      return Building
     case 'users':
       return Users
     case 'calendar':
       return Calendar
     default:
-      return Radar
+      return FileText
   }
 }
 
 const getIconGradient = (icon: string) => {
   switch (icon) {
-    case 'radar':
+    case 'policy':
       return {
         gradient: 'from-blue-400 to-indigo-500',
         bg: 'bg-blue-50',
-        hoverBg: 'bg-blue-100',
         text: 'text-blue-500',
+      }
+    case 'tech':
+      return {
+        gradient: 'from-cyan-400 to-teal-500',
+        bg: 'bg-cyan-50',
+        text: 'text-cyan-600',
+      }
+    case 'talent':
+      return {
+        gradient: 'from-emerald-400 to-green-500',
+        bg: 'bg-emerald-50',
+        text: 'text-emerald-600',
+      }
+    case 'university':
+      return {
+        gradient: 'from-purple-400 to-violet-500',
+        bg: 'bg-purple-50',
+        text: 'text-purple-600',
       }
     case 'building':
       return {
         gradient: 'from-amber-400 to-orange-500',
         bg: 'bg-amber-50',
-        hoverBg: 'bg-amber-100',
         text: 'text-amber-600',
       }
     case 'users':
       return {
         gradient: 'from-green-400 to-emerald-500',
         bg: 'bg-green-50',
-        hoverBg: 'bg-green-100',
         text: 'text-green-600',
       }
     case 'calendar':
       return {
         gradient: 'from-violet-400 to-purple-500',
         bg: 'bg-violet-50',
-        hoverBg: 'bg-violet-100',
         text: 'text-violet-600',
       }
     default:
       return {
         gradient: 'from-blue-400 to-indigo-500',
         bg: 'bg-blue-50',
-        hoverBg: 'bg-blue-100',
         text: 'text-blue-500',
       }
   }

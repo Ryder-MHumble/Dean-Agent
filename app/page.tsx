@@ -1,40 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import AppShell, { TopBar } from "@/components/app-shell"
-import FloatingAIAssistant from "@/components/floating-ai-assistant"
-import HomeBriefingPage from "@/components/pages/home-briefing"
-import IntelligencePage from "@/components/pages/intelligence"
-import OperationsPage from "@/components/pages/operations"
-import PolicyPage from "@/components/pages/policy"
-import SchedulePage from "@/components/pages/schedule"
-import { MotionPage } from "@/components/motion"
-import { Toaster } from "sonner"
-
-const pageMeta: Record<string, { title: string; subtitle?: string }> = {
-  home: { title: "院长早报", subtitle: "今日态势 · 全局掌控" },
-  radar: {
-    title: "战略雷达",
-    subtitle: "外部情报 · 政策技术竞对",
-  },
-  internal: {
-    title: "院内事务",
-    subtitle: "异常管理 · 风险预警",
-  },
-  network: {
-    title: "政策与人脉",
-    subtitle: "人才追踪 · 关系维护",
-  },
-  schedule: {
-    title: "智能日程",
-    subtitle: "日程ROI · 冲突管理 · 会谈助手",
-  },
-}
+import { useState } from "react";
+import AppShell, { TopBar } from "@/components/app-shell";
+import FloatingAIAssistant from "@/components/floating-ai-assistant";
+import HomeModule from "@/components/modules/home";
+import PolicyIntelModule from "@/components/modules/policy-intel";
+import TechFrontierModule from "@/components/modules/tech-frontier";
+import TalentRadarModule from "@/components/modules/talent-radar";
+import UniversityEcoModule from "@/components/modules/university-eco";
+import InternalMgmtModule from "@/components/modules/internal-mgmt";
+import NetworkModule from "@/components/modules/network";
+import SmartScheduleModule from "@/components/modules/smart-schedule";
+import { MotionPage } from "@/components/motion";
+import { Toaster } from "sonner";
+import { pageMeta } from "@/lib/mock-data/navigation";
 
 export default function Page() {
-  const [activePage, setActivePage] = useState("home")
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const meta = pageMeta[activePage] || pageMeta.home
+  const [activePage, setActivePage] = useState("home");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const meta = pageMeta[activePage] || pageMeta.home;
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -51,16 +35,19 @@ export default function Page() {
         <TopBar title={meta.title} subtitle={meta.subtitle} />
         <div className="min-h-[calc(100vh-64px)]">
           <MotionPage pageKey={activePage}>
-            {activePage === "home" && <HomeBriefingPage onNavigate={setActivePage} />}
-            {activePage === "radar" && <IntelligencePage />}
-            {activePage === "internal" && <OperationsPage />}
-            {activePage === "network" && <PolicyPage />}
-            {activePage === "schedule" && <SchedulePage />}
+            {activePage === "home" && <HomeModule onNavigate={setActivePage} />}
+            {activePage === "policy-intel" && <PolicyIntelModule />}
+            {activePage === "tech-frontier" && <TechFrontierModule />}
+            {activePage === "talent-radar" && <TalentRadarModule />}
+            {activePage === "university-eco" && <UniversityEcoModule />}
+            {activePage === "internal-mgmt" && <InternalMgmtModule />}
+            {activePage === "network" && <NetworkModule />}
+            {activePage === "smart-schedule" && <SmartScheduleModule />}
           </MotionPage>
         </div>
       </main>
       <FloatingAIAssistant />
       <Toaster position="top-right" richColors closeButton />
     </div>
-  )
+  );
 }

@@ -1,35 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import {
-  LayoutDashboard,
-  Radar,
-  Building2,
-  Users,
-  Calendar,
-  Search,
-  Bell,
-  HelpCircle,
-  Settings,
-  ChevronLeft,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react";
+import { Search, Bell, HelpCircle, Settings, ChevronLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { motion, AnimatePresence } from "framer-motion"
-
-const navItems = [
-  { id: "home", label: "院长早报", icon: LayoutDashboard },
-  { id: "radar", label: "战略雷达", icon: Radar, badge: 5 },
-  { id: "internal", label: "院内事务", icon: Building2 },
-  { id: "network", label: "政策与人脉", icon: Users },
-  { id: "schedule", label: "智能日程", icon: Calendar },
-]
+} from "@/components/ui/tooltip";
+import { motion, AnimatePresence } from "framer-motion";
+import { navGroups } from "@/lib/mock-data/navigation";
 
 export default function AppShell({
   activePage,
@@ -37,23 +19,23 @@ export default function AppShell({
   collapsed: controlledCollapsed,
   onCollapsedChange,
 }: {
-  activePage: string
-  onNavigate: (page: string) => void
-  collapsed?: boolean
-  onCollapsedChange?: (collapsed: boolean) => void
+  activePage: string;
+  onNavigate: (page: string) => void;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }) {
-  const [internalCollapsed, setInternalCollapsed] = useState(false)
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
   const collapsed =
-    controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed
+    controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
 
   const handleToggle = () => {
-    const newValue = !collapsed
+    const newValue = !collapsed;
     if (onCollapsedChange) {
-      onCollapsedChange(newValue)
+      onCollapsedChange(newValue);
     } else {
-      setInternalCollapsed(newValue)
+      setInternalCollapsed(newValue);
     }
-  }
+  };
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -106,92 +88,110 @@ export default function AppShell({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 pt-2">
-          <div className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = activePage === item.id
-              return (
-                <Tooltip key={item.id}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => onNavigate(item.id)}
-                      className={cn(
-                        "relative flex w-full items-center gap-3 rounded-xl py-2.5 text-sm font-medium transition-colors duration-200",
-                        collapsed ? "justify-center px-0" : "px-3",
-                        isActive
-                          ? "bg-blue-50/80 text-blue-600 shadow-sm"
-                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+        <nav className="flex-1 px-3 pt-2 overflow-y-auto">
+          {navGroups.map((group, groupIdx) => (
+            <div key={groupIdx}>
+              {groupIdx > 0 && (
+                <div className="my-2 mx-0 border-t border-border/30" />
+              )}
+              {group.label && !collapsed && (
+                <AnimatePresence>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60"
+                  >
+                    {group.label}
+                  </motion.p>
+                </AnimatePresence>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const isActive = activePage === item.id;
+                  return (
+                    <Tooltip key={item.id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => onNavigate(item.id)}
+                          className={cn(
+                            "relative flex w-full items-center gap-3 rounded-xl py-2 text-sm font-medium transition-colors duration-200",
+                            collapsed ? "justify-center px-0" : "px-3",
+                            isActive
+                              ? "bg-blue-50/80 text-blue-600 shadow-sm"
+                              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                          )}
+                        >
+                          {isActive && (
+                            <motion.span
+                              layoutId="nav-active-indicator"
+                              className="absolute -left-3 top-1/2 -translate-y-1/2 h-7 w-[3px] rounded-full bg-gradient-to-b from-blue-500 to-indigo-600"
+                              transition={{
+                                type: "spring",
+                                stiffness: 300,
+                                damping: 30,
+                              }}
+                            />
+                          )}
+                          <item.icon
+                            className={cn(
+                              "h-[18px] w-[18px] shrink-0 transition-colors",
+                              isActive && "text-blue-600",
+                            )}
+                          />
+                          <AnimatePresence>
+                            {!collapsed && (
+                              <motion.span
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -8 }}
+                                transition={{ duration: 0.18, ease: "easeOut" }}
+                                className="whitespace-nowrap overflow-hidden"
+                              >
+                                {item.label}
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                          <AnimatePresence>
+                            {!collapsed && item.badge && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                transition={{ duration: 0.15 }}
+                                className="ml-auto"
+                              >
+                                <Badge
+                                  variant="secondary"
+                                  className={cn(
+                                    "h-5 min-w-5 px-1.5 text-[10px]",
+                                    isActive
+                                      ? "bg-blue-100 text-blue-600"
+                                      : "bg-muted text-muted-foreground",
+                                  )}
+                                >
+                                  {item.badge}
+                                </Badge>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                          {collapsed && item.badge && (
+                            <span className="absolute top-1.5 right-2 h-2 w-2 rounded-full bg-blue-500 animate-pulse-soft" />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      {collapsed && (
+                        <TooltipContent side="right" sideOffset={10}>
+                          <p>{item.label}</p>
+                        </TooltipContent>
                       )}
-                    >
-                      {/* Active indicator bar */}
-                      {isActive && (
-                        <motion.span
-                          layoutId="nav-active-indicator"
-                          className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-[3px] rounded-full bg-gradient-to-b from-blue-500 to-indigo-600"
-                          transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                      <item.icon
-                        className={cn(
-                          "h-[18px] w-[18px] shrink-0 transition-colors",
-                          isActive && "text-blue-600"
-                        )}
-                      />
-                      <AnimatePresence>
-                        {!collapsed && (
-                          <motion.span
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -8 }}
-                            transition={{ duration: 0.18, ease: "easeOut" }}
-                            className="whitespace-nowrap overflow-hidden"
-                          >
-                            {item.label}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                      <AnimatePresence>
-                        {!collapsed && item.badge && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ duration: 0.15 }}
-                            className="ml-auto"
-                          >
-                            <Badge
-                              variant="secondary"
-                              className={cn(
-                                "h-5 min-w-5 px-1.5 text-[10px]",
-                                isActive
-                                  ? "bg-blue-100 text-blue-600"
-                                  : "bg-muted text-muted-foreground"
-                              )}
-                            >
-                              {item.badge}
-                            </Badge>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      {collapsed && item.badge && (
-                        <span className="absolute top-1.5 right-2 h-2 w-2 rounded-full bg-blue-500 animate-pulse-soft" />
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  {collapsed && (
-                    <TooltipContent side="right" sideOffset={10}>
-                      <p>{item.label}</p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              )
-            })}
-          </div>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Bottom section */}
@@ -202,7 +202,7 @@ export default function AppShell({
                 type="button"
                 className={cn(
                   "flex w-full items-center gap-2 rounded-xl py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground",
-                  collapsed ? "justify-center px-0" : "px-3"
+                  collapsed ? "justify-center px-0" : "px-3",
                 )}
               >
                 <Settings className="h-4 w-4 shrink-0" />
@@ -230,15 +230,15 @@ export default function AppShell({
         </div>
       </motion.aside>
     </TooltipProvider>
-  )
+  );
 }
 
 export function TopBar({
   title,
   subtitle,
 }: {
-  title: string
-  subtitle?: string
+  title: string;
+  subtitle?: string;
 }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/40 bg-white/70 px-6 backdrop-blur-md shadow-sm">
@@ -280,5 +280,5 @@ export function TopBar({
         </button>
       </div>
     </header>
-  )
+  );
 }

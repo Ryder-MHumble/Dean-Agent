@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   HoverCard,
   HoverCardTrigger,
   HoverCardContent,
-} from "@/components/ui/hover-card"
-import { StaggerContainer, StaggerItem } from "@/components/motion"
+} from "@/components/ui/hover-card";
+import { StaggerContainer, StaggerItem } from "@/components/motion";
 import {
   Filter,
   Sparkles,
@@ -18,143 +18,22 @@ import {
   CheckCircle2,
   Zap,
   ArrowRight,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
-
-// ---------------------
-// Mock Data
-// ---------------------
-
-interface PolicyInsight {
-  label: string
-  color: string
-  text: string
-}
-
-interface PolicyItem {
-  id: string
-  level: "national" | "beijing"
-  agency: string
-  agencyColor: string
-  date: string
-  title: string
-  description?: string
-  impact?: string
-  impactColor?: string
-  actionLabel?: string
-  insights?: PolicyInsight[]
-  tags?: string[]
-}
-
-const policyData: PolicyItem[] = [
-  {
-    id: "1",
-    level: "national",
-    agency: "科技部",
-    agencyColor: "bg-blue-100 text-blue-700",
-    date: "2023-11-14",
-    title: "关于印发《科技伦理治理指南(2023年修订)》的通知",
-    description:
-      "科技部发布了关于生成式AI伦理、数据隐私标准和跨境数据传输协议的更新指南。",
-    impact: "高影响",
-    impactColor: "bg-red-100 text-red-700",
-    actionLabel: "AI 影响分析",
-    insights: [
-      {
-        label: "直接行动",
-        color: "text-green-600",
-        text: "需要立即审查我院\"Lab B\"数据协议。Q4项目资金可能取决于合规性。",
-      },
-      {
-        label: "风险",
-        color: "text-yellow-600",
-        text: "第4.2条暗示更严格的国际合作限制，未经事先批准不得进行。",
-      },
-    ],
-    tags: ["#AI伦理", "#合规"],
-  },
-  {
-    id: "2",
-    level: "beijing",
-    agency: "发改委",
-    agencyColor: "bg-green-100 text-green-700",
-    date: "2023-11-13",
-    title: "北京市高级别自动驾驶试点区发展规划",
-    insights: [
-      {
-        label: "机遇",
-        color: "text-blue-600",
-        text: "为交通系统部门开辟了新的市政拨款窗口。与当前\"智慧城市\"计划一致。",
-      },
-    ],
-  },
-  {
-    id: "3",
-    level: "national",
-    agency: "教育部",
-    agencyColor: "bg-purple-100 text-purple-700",
-    date: "2023-11-12",
-    title: "关于加强高校基础研究人才培养的通知",
-    description: "关于博士项目资助分配的一般性政策更新。",
-  },
-  {
-    id: "4",
-    level: "beijing",
-    agency: "北京科委",
-    agencyColor: "bg-amber-100 text-amber-700",
-    date: "2023-11-11",
-    title: "北京算力基础设施补贴政策发布",
-    description:
-      "面向高校和科研院所的算力基础设施建设补贴，与我院算力平台二期高度匹配。",
-    impact: "高影响",
-    impactColor: "bg-red-100 text-red-700",
-    actionLabel: "组织申报",
-    insights: [
-      {
-        label: "机遇",
-        color: "text-green-600",
-        text: "匹配度98%，预估资金规模500-1000万，建议紧急组织申报。",
-      },
-    ],
-    tags: ["#算力", "#补贴"],
-  },
-]
-
-const policyMatchData = [
-  {
-    id: "m1",
-    title: "算力基础设施补贴",
-    matchScore: 98,
-    funding: "500-1000万",
-    daysRemaining: 12,
-  },
-  {
-    id: "m2",
-    title: "AI伦理合规专项",
-    matchScore: 85,
-    funding: "200-500万",
-    daysRemaining: 25,
-  },
-  {
-    id: "m3",
-    title: "基础研究人才计划",
-    matchScore: 72,
-    funding: "100-300万",
-    daysRemaining: 40,
-  },
-]
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import type { PolicyTrackingItem } from "@/lib/types/policy-tracking";
+import { policyData, policyMatchData } from "@/lib/mock-data/policy-tracking";
 
 // ---------------------
 // Helper: border color by urgency / agency
 // ---------------------
-function getBorderColor(item: PolicyItem): string {
-  if (item.impact) return "border-l-red-500"
-  if (item.agency === "科技部") return "border-l-blue-500"
-  if (item.agency === "发改委") return "border-l-green-500"
-  if (item.agency === "教育部") return "border-l-purple-500"
-  if (item.agency === "北京科委") return "border-l-amber-500"
-  return "border-l-slate-300"
+function getBorderColor(item: PolicyTrackingItem): string {
+  if (item.impact) return "border-l-red-500";
+  if (item.agency === "科技部") return "border-l-blue-500";
+  if (item.agency === "发改委") return "border-l-green-500";
+  if (item.agency === "教育部") return "border-l-purple-500";
+  if (item.agency === "北京科委") return "border-l-amber-500";
+  return "border-l-slate-300";
 }
 
 // ---------------------
@@ -162,12 +41,12 @@ function getBorderColor(item: PolicyItem): string {
 // ---------------------
 function InsightIcon({ label }: { label: string }) {
   if (label === "直接行动")
-    return <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0" />
+    return <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0" />;
   if (label === "风险")
-    return <AlertTriangle className="h-3 w-3 text-yellow-600 shrink-0" />
+    return <AlertTriangle className="h-3 w-3 text-yellow-600 shrink-0" />;
   if (label === "机遇")
-    return <Zap className="h-3 w-3 text-blue-600 shrink-0" />
-  return <Sparkles className="h-3 w-3 text-blue-500 shrink-0" />
+    return <Zap className="h-3 w-3 text-blue-600 shrink-0" />;
+  return <Sparkles className="h-3 w-3 text-blue-500 shrink-0" />;
 }
 
 // ---------------------
@@ -176,12 +55,14 @@ function InsightIcon({ label }: { label: string }) {
 export default function PolicyTrackingView() {
   const [levelFilter, setLevelFilter] = useState<
     "all" | "national" | "beijing"
-  >("all")
+  >("all");
+  const [selectedPolicy, setSelectedPolicy] =
+    useState<PolicyTrackingItem | null>(policyData[0]);
 
   const filteredPolicies = policyData.filter((p) => {
-    if (levelFilter === "all") return true
-    return p.level === levelFilter
-  })
+    if (levelFilter === "all") return true;
+    return p.level === levelFilter;
+  });
 
   return (
     <div className="grid grid-cols-12 gap-4">
@@ -211,7 +92,9 @@ export default function PolicyTrackingView() {
           <button
             type="button"
             className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted transition-colors"
-            onClick={() => toast("来源筛选", { description: "正在打开来源筛选面板..." })}
+            onClick={() =>
+              toast("来源筛选", { description: "正在打开来源筛选面板..." })
+            }
           >
             <Filter className="h-3.5 w-3.5" />
             来源筛选
@@ -228,8 +111,11 @@ export default function PolicyTrackingView() {
                     <Card
                       className={cn(
                         "shadow-card hover:shadow-card-hover transition-all rounded-xl border-0 border-l-4 cursor-pointer",
-                        getBorderColor(policy)
+                        getBorderColor(policy),
+                        selectedPolicy?.id === policy.id &&
+                          "ring-2 ring-blue-400/50",
                       )}
+                      onClick={() => setSelectedPolicy(policy)}
                     >
                       <CardContent className="p-4">
                         {/* Top Row: Agency + Impact + Date */}
@@ -238,7 +124,7 @@ export default function PolicyTrackingView() {
                             <Badge
                               className={cn(
                                 "text-[10px] font-medium border-0 hover:opacity-90",
-                                policy.agencyColor
+                                policy.agencyColor,
                               )}
                             >
                               {policy.agency}
@@ -247,7 +133,7 @@ export default function PolicyTrackingView() {
                               <Badge
                                 className={cn(
                                   "text-[10px] font-medium border-0",
-                                  policy.impactColor
+                                  policy.impactColor,
                                 )}
                               >
                                 {policy.impact}
@@ -291,7 +177,7 @@ export default function PolicyTrackingView() {
                                     <span
                                       className={cn(
                                         "font-medium",
-                                        insight.color
+                                        insight.color,
                                       )}
                                     >
                                       {insight.label}:
@@ -324,7 +210,12 @@ export default function PolicyTrackingView() {
                           <button
                             type="button"
                             className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-200 transition-colors"
-                            onClick={(e) => { e.stopPropagation(); toast("政策详情", { description: `正在加载「${policy.title}」的详细信息...` }) }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toast("政策详情", {
+                                description: `正在加载「${policy.title}」的详细信息...`,
+                              });
+                            }}
                           >
                             查看详情
                             <ArrowRight className="h-3 w-3" />
@@ -333,7 +224,12 @@ export default function PolicyTrackingView() {
                             <button
                               type="button"
                               className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-blue-700 transition-colors"
-                              onClick={(e) => { e.stopPropagation(); toast.success(`已启动: ${policy.actionLabel}`, { description: `针对「${policy.title}」的操作已开始执行` }) }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toast.success(`已启动: ${policy.actionLabel}`, {
+                                  description: `针对「${policy.title}」的操作已开始执行`,
+                                });
+                              }}
                             >
                               {policy.actionLabel}
                               <Zap className="h-3 w-3" />
@@ -355,7 +251,7 @@ export default function PolicyTrackingView() {
                         <Badge
                           className={cn(
                             "text-[10px] font-medium border-0",
-                            policy.agencyColor
+                            policy.agencyColor,
                           )}
                         >
                           {policy.agency}
@@ -407,8 +303,11 @@ export default function PolicyTrackingView() {
 
       {/* ===== Right Column (4 cols) ===== */}
       <div className="col-span-4 space-y-4">
-        {/* 1. AI Policy Analysis Summary */}
-        <Card className="rounded-xl border-0 bg-slate-800 text-white shadow-card">
+        {/* 1. AI Policy Analysis - Dynamic based on selected policy */}
+        <Card
+          key={selectedPolicy?.id ?? "empty"}
+          className="rounded-xl border-0 bg-slate-800 text-white shadow-card"
+        >
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-blue-400" />
@@ -416,45 +315,90 @@ export default function PolicyTrackingView() {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <p className="text-xs text-slate-300 leading-relaxed">
-              本周政策环境活跃度显著上升。科技部伦理指南修订将直接影响跨境合作项目，
-              北京市算力补贴窗口期仅剩12天，建议优先组织申报。整体政策风向利好基础研究投入。
-            </p>
-            <div className="mt-3 flex items-center gap-2">
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-blue-500 transition-colors"
-                onClick={() => toast("AI 政策分析", { description: "正在打开完整分析报告..." })}
-              >
-                阅读分析
-                <ArrowRight className="h-3 w-3" />
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-md bg-slate-700 px-2.5 py-1.5 text-[11px] font-medium text-slate-300 hover:bg-slate-600 transition-colors"
-                onClick={() => toast.success("起草备忘录", { description: "AI 正在生成政策备忘录草稿..." })}
-              >
-                起草备忘录
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 2. Key Signals */}
-        <Card className="rounded-xl border-0 shadow-card hover:shadow-card-hover transition-all">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-2">
-              <Sparkles className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-xs text-foreground leading-relaxed italic">
-                  &ldquo;要把基础研究摆在更加突出的位置，加大长期稳定支持力度，
-                  鼓励自由探索和交叉融合。&rdquo;
-                </p>
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  -- 国务院常务会议纪要 &middot; 2023.11.10
-                </p>
-              </div>
-            </div>
+            {selectedPolicy ? (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge
+                    className={cn(
+                      "text-[10px] font-medium border-0",
+                      selectedPolicy.agencyColor,
+                    )}
+                  >
+                    {selectedPolicy.agency}
+                  </Badge>
+                  {selectedPolicy.impact && (
+                    <Badge className="text-[10px] font-medium border-0 bg-white/10 text-white/80">
+                      {selectedPolicy.impact}
+                    </Badge>
+                  )}
+                </div>
+                <h4 className="text-xs font-semibold text-white leading-snug mb-2">
+                  {selectedPolicy.title}
+                </h4>
+                {selectedPolicy.description && (
+                  <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                    {selectedPolicy.description}
+                  </p>
+                )}
+                {selectedPolicy.insights &&
+                  selectedPolicy.insights.length > 0 && (
+                    <div className="space-y-2 mb-3">
+                      {selectedPolicy.insights.map((insight, i) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-1.5 text-xs"
+                        >
+                          <div
+                            className={cn(
+                              "h-1.5 w-1.5 rounded-full mt-1.5 shrink-0",
+                              insight.color === "text-green-600"
+                                ? "bg-green-400"
+                                : insight.color === "text-blue-600"
+                                  ? "bg-blue-400"
+                                  : "bg-amber-400",
+                            )}
+                          />
+                          <span className="text-slate-300">
+                            <span className="font-medium text-white/90">
+                              {insight.label}:
+                            </span>{" "}
+                            {insight.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-blue-500 transition-colors"
+                    onClick={() =>
+                      toast("AI 政策分析", {
+                        description: `正在分析「${selectedPolicy.title}」...`,
+                      })
+                    }
+                  >
+                    阅读分析
+                    <ArrowRight className="h-3 w-3" />
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 rounded-md bg-slate-700 px-2.5 py-1.5 text-[11px] font-medium text-slate-300 hover:bg-slate-600 transition-colors"
+                    onClick={() =>
+                      toast.success("起草备忘录", {
+                        description: `正在为「${selectedPolicy.title}」生成备忘录...`,
+                      })
+                    }
+                  >
+                    起草备忘录
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-slate-400 py-4 text-center">
+                点击左侧政策查看 AI 分析
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -472,7 +416,11 @@ export default function PolicyTrackingView() {
                 <div
                   key={match.id}
                   className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2 hover:bg-muted/60 transition-colors cursor-pointer"
-                  onClick={() => toast("政策匹配", { description: `「${match.title}」匹配度${match.matchScore}%，剩余${match.daysRemaining}天` })}
+                  onClick={() =>
+                    toast("政策匹配", {
+                      description: `「${match.title}」匹配度${match.matchScore}%，剩余${match.daysRemaining}天`,
+                    })
+                  }
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-foreground truncate">
@@ -503,5 +451,5 @@ export default function PolicyTrackingView() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
