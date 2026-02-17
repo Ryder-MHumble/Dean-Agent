@@ -7,8 +7,8 @@ import {
   Users,
   UserPlus,
   UserMinus,
-  Sparkles,
   ChevronRight,
+  Calendar,
 } from "lucide-react";
 import {
   MotionNumber,
@@ -16,8 +16,10 @@ import {
   StaggerItem,
 } from "@/components/motion";
 import MasterDetailView from "@/components/shared/master-detail-view";
+import DetailArticleBody from "@/components/shared/detail-article-body";
 import { useDetailView } from "@/hooks/use-detail-view";
 import { cn } from "@/lib/utils";
+import { groupByDate } from "@/lib/group-by-date";
 import { toast } from "sonner";
 import type { PersonnelChange } from "@/lib/types/university-eco";
 import { mockPersonnelChanges } from "@/lib/mock-data/university-eco";
@@ -51,7 +53,17 @@ function ImpactBadge({ level }: { level: PersonnelChange["impact"] }) {
 }
 
 export default function PersonnelTalent() {
-  const { selectedItem: selectedChange, open, close, isOpen } = useDetailView<PersonnelChange>();
+  const {
+    selectedItem: selectedChange,
+    open,
+    close,
+    isOpen,
+  } = useDetailView<PersonnelChange>();
+
+  const sortedChanges = [...mockPersonnelChanges].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+  const groups = groupByDate(sortedChanges);
 
   return (
     <>
@@ -110,51 +122,44 @@ export default function PersonnelTalent() {
                   </h2>
                 ),
                 subtitle: (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {selectedChange.institution} · {selectedChange.date}
-                  </p>
+                  <div className="flex items-center gap-2 flex-wrap mt-1 text-sm text-muted-foreground">
+                    <span>{selectedChange.institution}</span>
+                    <span>&middot;</span>
+                    <span>{selectedChange.date}</span>
+                  </div>
                 ),
               }
             : undefined
         }
         detailContent={
           selectedChange && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <ImpactBadge level={selectedChange.impact} />
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold mb-1">职位变动</h4>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{selectedChange.fromPosition}</span>
-                  <span className="text-violet-500 font-medium">→</span>
-                  <span>{selectedChange.toPosition}</span>
+            <DetailArticleBody
+              aiAnalysis={{
+                title: "AI 影响分析",
+                content: selectedChange.aiAnalysis,
+                colorScheme: "violet",
+              }}
+              summary={selectedChange.detail}
+              extraMeta={
+                <div className="space-y-3">
+                  <ImpactBadge level={selectedChange.impact} />
+                  <div>
+                    <h4 className="text-sm font-semibold mb-1">职位变动</h4>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>{selectedChange.fromPosition}</span>
+                      <span className="text-violet-500 font-medium">→</span>
+                      <span>{selectedChange.toPosition}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold mb-1">人物背景</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedChange.background}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold mb-1">人物背景</h4>
-                <p className="text-sm text-muted-foreground">
-                  {selectedChange.background}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold mb-2">详细信息</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {selectedChange.detail}
-                </p>
-              </div>
-              <div className="rounded-lg bg-violet-50 border border-violet-100 p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="h-4 w-4 text-violet-500" />
-                  <span className="text-sm font-semibold text-violet-700">
-                    AI 影响分析
-                  </span>
-                </div>
-                <p className="text-sm text-violet-700/80">
-                  {selectedChange.aiAnalysis}
-                </p>
-              </div>
-            </div>
+              }
+            />
           )
         }
         detailFooter={
@@ -179,78 +184,84 @@ export default function PersonnelTalent() {
           )
         }
       >
-        <Card className="shadow-card">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">
-                同行机构人事变动追踪
-              </CardTitle>
-              <Badge variant="secondary" className="text-[10px]">
-                按影响评估排序
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="overflow-y-auto max-h-[calc(100vh-320px)]">
-              <StaggerContainer className="space-y-3">
-                {mockPersonnelChanges.map((change) => (
-                  <StaggerItem key={change.id}>
-                    <button
-                      type="button"
-                      className={cn(
-                        "w-full rounded-lg border p-4 transition-all group cursor-pointer text-left",
-                        selectedChange?.id === change.id
-                          ? "border-violet-300 bg-violet-50/50 shadow-sm"
-                          : "hover:border-violet-200 hover:shadow-sm",
-                      )}
-                      onClick={() => open(change)}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600">
-                            {change.person.charAt(0)}
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-semibold group-hover:text-violet-600 transition-colors">
-                              {change.person}
-                            </h4>
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <span className="text-[11px] text-muted-foreground">
-                                {change.fromPosition}
-                              </span>
-                              <span className="text-[11px] text-violet-500 font-medium mx-1">
-                                →
-                              </span>
-                              <span className="text-[11px] text-muted-foreground">
-                                {change.toPosition}
-                              </span>
+        <div className="space-y-4 max-h-[calc(100vh-320px)] overflow-y-auto">
+          {groups.map((group) => (
+            <Card key={group.label} className="shadow-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    {group.label}
+                  </CardTitle>
+                  <Badge variant="secondary" className="text-[10px]">
+                    {group.items.length}条
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {group.items.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-3">
+                    暂无动态
+                  </p>
+                ) : (
+                  <StaggerContainer className="space-y-3">
+                    {group.items.map((change) => (
+                      <StaggerItem key={change.id}>
+                        <button
+                          type="button"
+                          className={cn(
+                            "w-full rounded-lg border p-4 transition-all group cursor-pointer text-left",
+                            selectedChange?.id === change.id
+                              ? "border-violet-300 bg-violet-50/50 shadow-sm"
+                              : "hover:border-violet-200 hover:shadow-sm",
+                          )}
+                          onClick={() => open(change)}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600">
+                                {change.person.charAt(0)}
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-semibold group-hover:text-violet-600 transition-colors">
+                                  {change.person}
+                                </h4>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <span className="text-[11px] text-muted-foreground">
+                                    {change.fromPosition}
+                                  </span>
+                                  <span className="text-[11px] text-violet-500 font-medium mx-1">
+                                    →
+                                  </span>
+                                  <span className="text-[11px] text-muted-foreground">
+                                    {change.toPosition}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <ImpactBadge level={change.impact} />
+                              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-violet-500 group-hover:translate-x-0.5 transition-all" />
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <ImpactBadge level={change.impact} />
-                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-violet-500 group-hover:translate-x-0.5 transition-all" />
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-[52px]">
-                        <TypeBadge type={change.type} />
-                        <span className="text-[11px] text-muted-foreground">
-                          {change.institution}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground ml-auto">
-                          {change.date}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground truncate ml-[52px] mt-1">
-                        {change.background}
-                      </p>
-                    </button>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-            </div>
-          </CardContent>
-        </Card>
+                          <div className="flex items-center gap-2 ml-[52px]">
+                            <TypeBadge type={change.type} />
+                            <span className="text-[11px] text-muted-foreground">
+                              {change.institution}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground truncate ml-[52px] mt-1">
+                            {change.background}
+                          </p>
+                        </button>
+                      </StaggerItem>
+                    ))}
+                  </StaggerContainer>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </MasterDetailView>
     </>
   );

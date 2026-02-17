@@ -2,17 +2,15 @@
 
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2, WifiOff } from "lucide-react";
 import { MotionCard } from "@/components/motion";
 import DataFreshness from "@/components/shared/data-freshness";
 import { cn } from "@/lib/utils";
 import NewsFeed from "./news-feed";
 import PersonCard from "./person-card";
-import {
-  mockPersonnelNews,
-  mockPersonProfiles,
-} from "@/lib/mock-data/talent-radar";
+import { usePersonnelNews } from "@/hooks/use-personnel-news";
 import type { PersonnelNewsCategory } from "@/lib/types/talent-radar";
 
 const CATEGORIES: { label: string; value: PersonnelNewsCategory | "全部" }[] = [
@@ -28,10 +26,13 @@ export default function TalentRadarModule() {
     PersonnelNewsCategory | "全部"
   >("全部");
 
+  const { items: allNews, profiles: allProfiles, isLoading, isUsingMock, generatedAt } =
+    usePersonnelNews();
+
   const isSearching = searchQuery.trim().length > 0;
 
   const filteredNews = useMemo(() => {
-    let items = mockPersonnelNews;
+    let items = allNews;
     if (activeCategory !== "全部") {
       items = items.filter((n) => n.category === activeCategory);
     }
@@ -46,19 +47,32 @@ export default function TalentRadarModule() {
       );
     }
     return items;
-  }, [activeCategory, searchQuery, isSearching]);
+  }, [allNews, activeCategory, searchQuery, isSearching]);
 
   const matchedProfiles = useMemo(() => {
     if (!isSearching) return [];
     const q = searchQuery.trim().toLowerCase();
-    return mockPersonProfiles.filter(
+    return allProfiles.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.organization.toLowerCase().includes(q) ||
         p.title.toLowerCase().includes(q) ||
         (p.field && p.field.toLowerCase().includes(q)),
     );
-  }, [searchQuery, isSearching]);
+  }, [allProfiles, searchQuery, isSearching]);
+
+  const freshnessDate = generatedAt ? new Date(generatedAt) : new Date(Date.now() - 1800000);
+
+  if (isLoading) {
+    return (
+      <div className="p-5 flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">加载人事动态...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-5 space-y-4">
@@ -68,7 +82,7 @@ export default function TalentRadarModule() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="搜索人物、机构... 例如「北大校长」「张亚勤」「基金委」"
+                placeholder="搜索人物、机构... 例如「大学校长」「基金委」「发改委」"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 pr-9 h-11 text-sm rounded-xl bg-muted/30 border-border/50 focus:bg-white transition-colors"
@@ -105,8 +119,14 @@ export default function TalentRadarModule() {
                   {cat.label}
                 </button>
               ))}
-              <div className="ml-auto">
-                <DataFreshness updatedAt={new Date(Date.now() - 1800000)} />
+              <div className="ml-auto flex items-center gap-2">
+                {isUsingMock && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1 text-amber-600 border-amber-200">
+                    <WifiOff className="h-3 w-3" />
+                    静态数据
+                  </Badge>
+                )}
+                <DataFreshness updatedAt={freshnessDate} />
               </div>
             </div>
           </CardContent>

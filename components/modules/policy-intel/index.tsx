@@ -8,7 +8,8 @@ import { MotionCard } from "@/components/motion";
 import DataFreshness from "@/components/shared/data-freshness";
 import { cn } from "@/lib/utils";
 import PolicyFeed from "./policy-feed";
-import { mockPolicyFeed } from "@/lib/mock-data/policy-intel";
+import { usePolicyFeed } from "@/hooks/use-policy-opportunities";
+import { SkeletonSubPage } from "@/components/shared/skeleton-states";
 import type { PolicyFeedCategory } from "@/lib/types/policy-intel";
 
 const CATEGORIES: {
@@ -23,6 +24,12 @@ const CATEGORIES: {
 ];
 
 export default function PolicyIntelModule() {
+  const {
+    items: feedItems,
+    isLoading,
+    isUsingMock,
+    generatedAt,
+  } = usePolicyFeed();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<
     PolicyFeedCategory | "全部"
@@ -31,7 +38,7 @@ export default function PolicyIntelModule() {
   const isSearching = searchQuery.trim().length > 0;
 
   const filteredFeed = useMemo(() => {
-    let items = mockPolicyFeed;
+    let items = feedItems;
     if (activeCategory !== "全部") {
       items = items.filter((n) => n.category === activeCategory);
     }
@@ -47,11 +54,13 @@ export default function PolicyIntelModule() {
       );
     }
     return items;
-  }, [activeCategory, searchQuery, isSearching]);
+  }, [feedItems, activeCategory, searchQuery, isSearching]);
+
+  if (isLoading) return <SkeletonSubPage />;
 
   return (
-    <div className="p-5 space-y-4">
-      <MotionCard delay={0}>
+    <div className="p-5 flex flex-col gap-4 h-[calc(100vh-4rem)] overflow-hidden">
+      <MotionCard delay={0} className="shrink-0">
         <Card className="shadow-card">
           <CardContent className="p-4">
             <div className="relative">
@@ -94,15 +103,26 @@ export default function PolicyIntelModule() {
                   {cat.label}
                 </button>
               ))}
-              <div className="ml-auto">
-                <DataFreshness updatedAt={new Date(Date.now() - 1800000)} />
+              <div className="ml-auto flex items-center gap-2">
+                {isUsingMock && (
+                  <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
+                    演示数据
+                  </span>
+                )}
+                <DataFreshness
+                  updatedAt={
+                    generatedAt
+                      ? new Date(generatedAt)
+                      : new Date(Date.now() - 1800000)
+                  }
+                />
               </div>
             </div>
           </CardContent>
         </Card>
       </MotionCard>
 
-      <MotionCard delay={0.1}>
+      <MotionCard delay={0.1} className="flex-1 min-h-0 overflow-hidden">
         <PolicyFeed key={activeCategory + searchQuery} items={filteredFeed} />
       </MotionCard>
     </div>

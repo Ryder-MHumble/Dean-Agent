@@ -1,16 +1,21 @@
 export interface PolicyItem {
   id: string;
-  name: string;
-  agency: string;
-  agencyType: "national" | "beijing" | "ministry";
+  title: string;
+  summary: string;
+  category: "国家政策" | "北京政策" | "领导讲话" | "政策机会";
+  importance: "紧急" | "重要" | "关注" | "一般";
+  date: string;
+  source: string;
+  tags: string[];
   matchScore: number;
-  funding: string;
-  deadline: string;
-  daysLeft: number;
-  status: "urgent" | "active" | "tracking";
-  aiInsight: string;
-  detail: string;
-  sourceUrl?: string;
+  funding?: string | null;
+  daysLeft?: number | null;
+  leader?: string | null;
+  relevance?: number | null;
+  signals?: string[] | null;
+  sourceUrl?: string | null;
+  aiInsight?: string | null;
+  detail?: string | null;
 }
 
 export interface TechTrend {

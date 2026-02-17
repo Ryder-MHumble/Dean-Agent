@@ -4,18 +4,14 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Sparkles,
-  ChevronRight,
-  ExternalLink,
-  Building2,
-  FlaskConical,
-} from "lucide-react";
+import { ChevronRight, Building2, FlaskConical, Calendar } from "lucide-react";
 import { StaggerContainer, StaggerItem } from "@/components/motion";
 import MasterDetailView from "@/components/shared/master-detail-view";
+import DetailArticleBody from "@/components/shared/detail-article-body";
 import DataFreshness from "@/components/shared/data-freshness";
 import { useDetailView } from "@/hooks/use-detail-view";
 import { cn } from "@/lib/utils";
+import { groupByDate } from "@/lib/group-by-date";
 import { toast } from "sonner";
 import type { PeerNewsItem, PeerNewsGroup } from "@/lib/types/university-eco";
 import { mockPeerNews } from "@/lib/mock-data/university-eco";
@@ -46,24 +42,10 @@ const FILTER_TABS: {
 function GroupBadge({ group }: { group: PeerNewsGroup }) {
   const c = GROUP_CONFIG[group];
   return (
-    <Badge
-      variant="outline"
-      className={cn("text-[11px] font-medium", c.color)}
-    >
+    <Badge variant="outline" className={cn("text-[11px] font-medium", c.color)}>
       {c.label}
     </Badge>
   );
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffDays = Math.floor(diffMs / 86400000);
-  if (diffDays === 0) return "今天";
-  if (diffDays === 1) return "昨天";
-  if (diffDays < 7) return `${diffDays}天前`;
-  return dateStr;
 }
 
 export default function PeerDynamics() {
@@ -82,6 +64,8 @@ export default function PeerDynamics() {
     if (activeFilter === "all") return sorted;
     return sorted.filter((n) => n.group === activeFilter);
   }, [activeFilter]);
+
+  const groups = groupByDate(filteredNews);
 
   return (
     <>
@@ -137,53 +121,26 @@ export default function PeerDynamics() {
                     </span>
                   </div>
                 ),
+                sourceUrl: selectedNews.url,
               }
             : undefined
         }
         detailContent={
           selectedNews && (
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-semibold mb-2">内容摘要</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {selectedNews.summary}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {selectedNews.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-[10px]">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <div className="rounded-lg bg-indigo-50 border border-indigo-100 p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="h-4 w-4 text-indigo-500" />
-                  <span className="text-sm font-semibold text-indigo-700">
-                    AI 摘要分析
-                  </span>
-                </div>
-                <p className="text-sm text-indigo-700/80">
-                  该动态来源于{selectedNews.sourceName}
-                  ，与我院研究方向存在潜在关联。建议关注后续进展并评估合作可能性。
-                </p>
-              </div>
-            </div>
+            <DetailArticleBody
+              aiAnalysis={{
+                title: "AI 摘要分析",
+                content: `该动态来源于${selectedNews.sourceName}，与我院研究方向存在潜在关联。建议关注后续进展并评估合作可能性。`,
+                colorScheme: "indigo",
+              }}
+              summary={selectedNews.summary}
+              tags={selectedNews.tags}
+            />
           )
         }
         detailFooter={
           selectedNews && (
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  window.open(selectedNews.url, "_blank");
-                }}
-              >
-                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                查看原文
-              </Button>
               <Button
                 className="flex-1"
                 onClick={() => {
@@ -193,63 +150,72 @@ export default function PeerDynamics() {
               >
                 重点跟踪
               </Button>
+              <Button
+                variant="outline"
+                onClick={() => toast.success("详细分析报告已生成")}
+              >
+                生成报告
+              </Button>
             </div>
           )
         }
       >
-        <Card className="shadow-card">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">
-                同行机构新闻动态
-              </CardTitle>
-              <Badge variant="secondary" className="text-[10px]">
-                按更新时间排序
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="overflow-y-auto max-h-[calc(100vh-280px)]">
-              <StaggerContainer className="space-y-2.5">
-                {filteredNews.map((news) => (
-                  <StaggerItem key={news.id}>
-                    <button
-                      type="button"
-                      className={cn(
-                        "w-full rounded-lg border p-4 transition-all group cursor-pointer text-left",
-                        selectedNews?.id === news.id
-                          ? "border-blue-300 bg-blue-50/50 shadow-sm"
-                          : "hover:border-blue-200 hover:shadow-sm",
-                      )}
-                      onClick={() => open(news)}
-                    >
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <h4 className="text-sm font-semibold leading-snug group-hover:text-blue-600 transition-colors flex-1">
-                          {news.title}
-                        </h4>
-                        <ChevronRight className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">
-                        {news.summary}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <GroupBadge group={news.group} />
+        <div className="space-y-4 max-h-[calc(100vh-280px)] overflow-y-auto">
+          {groups.map((group) => (
+            <Card key={group.label} className="shadow-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    {group.label}
+                  </CardTitle>
+                  <Badge variant="secondary" className="text-[10px]">
+                    {group.items.length}条
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <StaggerContainer className="space-y-2.5">
+                  {group.items.map((news) => (
+                    <StaggerItem key={news.id}>
+                      <button
+                        type="button"
+                        className={cn(
+                          "w-full rounded-lg border p-4 transition-all group cursor-pointer text-left",
+                          selectedNews?.id === news.id
+                            ? "border-blue-300 bg-blue-50/50 shadow-sm"
+                            : "hover:border-blue-200 hover:shadow-sm",
+                        )}
+                        onClick={() => open(news)}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <h4 className="text-sm font-semibold leading-snug group-hover:text-blue-600 transition-colors flex-1">
+                            {news.title}
+                          </h4>
+                          <ChevronRight className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">
+                          {news.summary}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <GroupBadge group={news.group} />
+                            <span className="text-[11px] text-muted-foreground">
+                              {news.sourceName}
+                            </span>
+                          </div>
                           <span className="text-[11px] text-muted-foreground">
-                            {news.sourceName}
+                            {news.date}
                           </span>
                         </div>
-                        <span className="text-[11px] text-muted-foreground">
-                          {formatDate(news.date)}
-                        </span>
-                      </div>
-                    </button>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-            </div>
-          </CardContent>
-        </Card>
+                      </button>
+                    </StaggerItem>
+                  ))}
+                </StaggerContainer>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </MasterDetailView>
     </>
   );

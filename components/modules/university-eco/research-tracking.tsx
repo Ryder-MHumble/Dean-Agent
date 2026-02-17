@@ -7,8 +7,8 @@ import {
   BookOpen,
   Lightbulb,
   Trophy,
-  Sparkles,
   ChevronRight,
+  Calendar,
 } from "lucide-react";
 import {
   MotionNumber,
@@ -16,8 +16,10 @@ import {
   StaggerItem,
 } from "@/components/motion";
 import MasterDetailView from "@/components/shared/master-detail-view";
+import DetailArticleBody from "@/components/shared/detail-article-body";
 import { useDetailView } from "@/hooks/use-detail-view";
 import { cn } from "@/lib/utils";
+import { groupByDate } from "@/lib/group-by-date";
 import { toast } from "sonner";
 import type { ResearchOutput } from "@/lib/types/university-eco";
 import { mockResearchOutputs } from "@/lib/mock-data/university-eco";
@@ -57,7 +59,17 @@ function InfluenceBadge({ level }: { level: ResearchOutput["influence"] }) {
 }
 
 export default function ResearchTracking() {
-  const { selectedItem: selectedOutput, open, close, isOpen } = useDetailView<ResearchOutput>();
+  const {
+    selectedItem: selectedOutput,
+    open,
+    close,
+    isOpen,
+  } = useDetailView<ResearchOutput>();
+
+  const sortedOutputs = [...mockResearchOutputs].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+  const groups = groupByDate(sortedOutputs);
 
   return (
     <>
@@ -115,45 +127,39 @@ export default function ResearchTracking() {
                   </h2>
                 ),
                 subtitle: (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {selectedOutput.institution} · {selectedOutput.field} ·{" "}
-                    {selectedOutput.date}
-                  </p>
+                  <div className="flex items-center gap-2 flex-wrap mt-1 text-sm text-muted-foreground">
+                    <TypeBadge type={selectedOutput.type} />
+                    <span>{selectedOutput.institution}</span>
+                    <span>&middot;</span>
+                    <span>{selectedOutput.field}</span>
+                    <span>&middot;</span>
+                    <span>{selectedOutput.date}</span>
+                  </div>
                 ),
               }
             : undefined
         }
         detailContent={
           selectedOutput && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <TypeBadge type={selectedOutput.type} />
-                <InfluenceBadge level={selectedOutput.influence} />
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold mb-1">作者/团队</h4>
-                <p className="text-sm text-muted-foreground">
-                  {selectedOutput.authors}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold mb-2">详细信息</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {selectedOutput.detail}
-                </p>
-              </div>
-              <div className="rounded-lg bg-purple-50 border border-purple-100 p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="h-4 w-4 text-purple-500" />
-                  <span className="text-sm font-semibold text-purple-700">
-                    AI 竞争分析
-                  </span>
+            <DetailArticleBody
+              aiAnalysis={{
+                title: "AI 竞争分析",
+                content: selectedOutput.aiAnalysis,
+                colorScheme: "purple",
+              }}
+              summary={selectedOutput.detail}
+              extraMeta={
+                <div className="space-y-3">
+                  <InfluenceBadge level={selectedOutput.influence} />
+                  <div>
+                    <h4 className="text-sm font-semibold mb-1">作者/团队</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedOutput.authors}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-purple-700/80">
-                  {selectedOutput.aiAnalysis}
-                </p>
-              </div>
-            </div>
+              }
+            />
           )
         }
         detailFooter={
@@ -178,78 +184,75 @@ export default function ResearchTracking() {
           )
         }
       >
-        <Card className="shadow-card">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">
-                同行机构科研成果追踪
-              </CardTitle>
-              <Badge variant="secondary" className="text-[10px]">
-                按影响力排序
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="overflow-y-auto max-h-[calc(100vh-320px)]">
-              <StaggerContainer className="space-y-3">
-                {mockResearchOutputs.map((output) => (
-                  <StaggerItem key={output.id}>
-                    <button
-                      type="button"
-                      className={cn(
-                        "w-full rounded-lg border p-4 transition-all group cursor-pointer text-left",
-                        selectedOutput?.id === output.id
-                          ? "border-purple-300 bg-purple-50/50 shadow-sm"
-                          : "hover:border-purple-200 hover:shadow-sm",
-                      )}
-                      onClick={() => open(output)}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600">
-                            {output.institution.charAt(0)}
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-semibold group-hover:text-purple-600 transition-colors">
-                              {output.title}
-                            </h4>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[11px] text-muted-foreground">
-                                {output.institution}
-                              </span>
-                              <span className="text-[11px] text-muted-foreground">
-                                ·
-                              </span>
-                              <span className="text-[11px] text-muted-foreground">
-                                {output.field}
-                              </span>
-                              <span className="text-[11px] text-muted-foreground">
-                                ·
-                              </span>
-                              <span className="text-[11px] text-muted-foreground">
-                                {output.date}
-                              </span>
+        <div className="space-y-4 max-h-[calc(100vh-320px)] overflow-y-auto">
+          {groups.map((group) => (
+            <Card key={group.label} className="shadow-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    {group.label}
+                  </CardTitle>
+                  <Badge variant="secondary" className="text-[10px]">
+                    {group.items.length}条
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <StaggerContainer className="space-y-3">
+                  {group.items.map((output) => (
+                    <StaggerItem key={output.id}>
+                      <button
+                        type="button"
+                        className={cn(
+                          "w-full rounded-lg border p-4 transition-all group cursor-pointer text-left",
+                          selectedOutput?.id === output.id
+                            ? "border-purple-300 bg-purple-50/50 shadow-sm"
+                            : "hover:border-purple-200 hover:shadow-sm",
+                        )}
+                        onClick={() => open(output)}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600">
+                              {output.institution.charAt(0)}
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold group-hover:text-purple-600 transition-colors">
+                                {output.title}
+                              </h4>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[11px] text-muted-foreground">
+                                  {output.institution}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground">
+                                  ·
+                                </span>
+                                <span className="text-[11px] text-muted-foreground">
+                                  {output.field}
+                                </span>
+                              </div>
                             </div>
                           </div>
+                          <div className="flex items-center gap-2">
+                            <InfluenceBadge level={output.influence} />
+                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-purple-500 group-hover:translate-x-0.5 transition-all" />
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <InfluenceBadge level={output.influence} />
-                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-purple-500 group-hover:translate-x-0.5 transition-all" />
+                        <div className="flex items-center gap-2 ml-[52px]">
+                          <TypeBadge type={output.type} />
+                          <span className="text-xs text-muted-foreground truncate max-w-[500px]">
+                            {output.authors}
+                          </span>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-[52px]">
-                        <TypeBadge type={output.type} />
-                        <span className="text-xs text-muted-foreground truncate max-w-[500px]">
-                          {output.authors}
-                        </span>
-                      </div>
-                    </button>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-            </div>
-          </CardContent>
-        </Card>
+                      </button>
+                    </StaggerItem>
+                  ))}
+                </StaggerContainer>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </MasterDetailView>
     </>
   );

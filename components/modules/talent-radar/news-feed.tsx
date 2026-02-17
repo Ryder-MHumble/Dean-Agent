@@ -2,13 +2,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ExternalLink, ChevronRight, Calendar } from "lucide-react";
+import { ChevronRight, Calendar } from "lucide-react";
 import { StaggerContainer, StaggerItem } from "@/components/motion";
 import MasterDetailView from "@/components/shared/master-detail-view";
+import DetailArticleBody from "@/components/shared/detail-article-body";
 import { useDetailView } from "@/hooks/use-detail-view";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { groupByDate } from "@/lib/group-by-date";
 import PersonCard from "./person-card";
 import type { PersonnelNewsItem } from "@/lib/types/talent-radar";
 
@@ -24,33 +24,13 @@ const importanceConfig: Record<string, string> = {
   一般: "bg-gray-300",
 };
 
-function groupByDate(
-  items: PersonnelNewsItem[],
-): { label: string; items: PersonnelNewsItem[] }[] {
-  const today = new Date().toISOString().slice(0, 10);
-  const now = new Date();
-  const dayOfWeek = now.getDay() || 7;
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - dayOfWeek + 1);
-  const weekStartStr = weekStart.toISOString().slice(0, 10);
-
-  const groups = [
-    { label: "今天", items: items.filter((i) => i.date === today) },
-    {
-      label: "本周",
-      items: items.filter((i) => i.date < today && i.date >= weekStartStr),
-    },
-    { label: "更早", items: items.filter((i) => i.date < weekStartStr) },
-  ];
-  return groups.filter((g) => g.items.length > 0);
-}
-
 interface NewsFeedProps {
   items: PersonnelNewsItem[];
 }
 
 export default function NewsFeed({ items }: NewsFeedProps) {
-  const { selectedItem, open, close, isOpen } = useDetailView<PersonnelNewsItem>();
+  const { selectedItem, open, close, isOpen } =
+    useDetailView<PersonnelNewsItem>();
   const groups = groupByDate(items);
 
   if (items.length === 0) {
@@ -76,27 +56,40 @@ export default function NewsFeed({ items }: NewsFeedProps) {
                 </h2>
               ),
               subtitle: (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {selectedItem.source} &middot; {selectedItem.date}
-                </p>
+                <div className="flex items-center gap-2 flex-wrap mt-1 text-sm text-muted-foreground">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-xs",
+                      categoryConfig[selectedItem.category]?.bg,
+                      categoryConfig[selectedItem.category]?.color,
+                    )}
+                  >
+                    {selectedItem.category}
+                  </Badge>
+                  <span>{selectedItem.source}</span>
+                  <span>&middot;</span>
+                  <span>{selectedItem.date}</span>
+                </div>
               ),
+              sourceUrl: selectedItem.sourceUrl,
             }
           : undefined
       }
       detailContent={
         selectedItem && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs",
-                  categoryConfig[selectedItem.category]?.bg,
-                  categoryConfig[selectedItem.category]?.color,
-                )}
-              >
-                {selectedItem.category}
-              </Badge>
+          <DetailArticleBody
+            aiAnalysis={
+              selectedItem.relevanceNote
+                ? {
+                    title: "AI 关联分析",
+                    content: selectedItem.relevanceNote,
+                    colorScheme: "indigo",
+                  }
+                : undefined
+            }
+            summary={selectedItem.summary}
+            extraMeta={
               <Badge
                 variant="outline"
                 className={cn("text-xs", {
@@ -110,60 +103,16 @@ export default function NewsFeed({ items }: NewsFeedProps) {
               >
                 {selectedItem.importance}
               </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {selectedItem.summary}
-            </p>
-            {selectedItem.sourceUrl && (
-              <a
-                href={selectedItem.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                查看原始报道
-              </a>
-            )}
+            }
+          >
             {selectedItem.personProfile && (
               <PersonCard profile={selectedItem.personProfile} compact />
             )}
-            {selectedItem.relevanceNote && (
-              <div className="rounded-lg bg-muted/50 border p-3">
-                <span className="text-xs font-medium text-foreground">
-                  与我院相关
-                </span>
-                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  {selectedItem.relevanceNote}
-                </p>
-              </div>
-            )}
-          </div>
-        )
-      }
-      detailFooter={
-        selectedItem && (
-          <div className="flex gap-2">
-            <Button
-              className="flex-1"
-              onClick={() => {
-                toast.success("已标记为重点关注");
-                close();
-              }}
-            >
-              标记关注
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => toast.success("已推送至人脉网络")}
-            >
-              推送至人脉
-            </Button>
-          </div>
+          </DetailArticleBody>
         )
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-4 max-h-[calc(100vh-280px)] overflow-y-auto">
         {groups.map((group) => (
           <Card key={group.label} className="shadow-card">
             <CardHeader className="pb-3">

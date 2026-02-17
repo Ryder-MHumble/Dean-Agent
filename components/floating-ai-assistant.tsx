@@ -1,11 +1,23 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, X, Minimize2, Send, User } from "lucide-react";
+import {
+  Bot,
+  X,
+  Minus,
+  Send,
+  User,
+  Sparkles,
+  Calendar,
+  FileText,
+  Search,
+  Users,
+  BarChart3,
+  ChevronDown,
+  ArrowUp,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "@/components/motion";
 
@@ -16,29 +28,38 @@ import {
   getAIResponse,
 } from "@/lib/mock-data/ai-assistant";
 
+const ICON_MAP: Record<string, React.ElementType> = {
+  calendar: Calendar,
+  fileText: FileText,
+  search: Search,
+  users: Users,
+  barChart: BarChart3,
+};
+
 // ==================
-// Typing Indicator Component
+// Typing Indicator
 // ==================
 function TypingIndicator() {
   return (
-    <div className="flex items-start gap-2.5 mb-4">
-      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+    <div className="flex items-end gap-2.5 mb-4">
+      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
         <Bot className="h-4 w-4 text-white" />
       </div>
-      <div className="bg-gray-100 rounded-2xl rounded-tl-md px-4 py-3">
-        <div className="flex items-center gap-1">
-          <span
-            className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
-            style={{ animationDelay: "0ms" }}
-          />
-          <span
-            className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
-            style={{ animationDelay: "150ms" }}
-          />
-          <span
-            className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
-            style={{ animationDelay: "300ms" }}
-          />
+      <div className="bg-muted/60 backdrop-blur-sm rounded-2xl rounded-bl-md px-4 py-3 border border-border/40">
+        <div className="flex items-center gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <motion.span
+              key={i}
+              className="h-1.5 w-1.5 bg-blue-500/60 rounded-full"
+              animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
+              transition={{
+                duration: 0.8,
+                repeat: Infinity,
+                delay: i * 0.15,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -46,7 +67,7 @@ function TypingIndicator() {
 }
 
 // ==================
-// Message Bubble Component
+// Message Bubble
 // ==================
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
@@ -57,43 +78,50 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      initial={{ opacity: 0, y: 10, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={cn(
-        "flex items-start gap-2.5 mb-4",
+        "flex items-end gap-2.5 mb-3",
         isUser ? "flex-row-reverse" : "flex-row",
       )}
     >
       {/* Avatar */}
       {isUser ? (
-        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
-          <User className="h-4 w-4 text-white" />
+        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-md shadow-blue-600/20">
+          <User className="h-3.5 w-3.5 text-white" />
         </div>
       ) : (
-        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-          <Bot className="h-4 w-4 text-white" />
+        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
+          <Bot className="h-3.5 w-3.5 text-white" />
         </div>
       )}
 
       {/* Bubble */}
       <div
         className={cn(
-          "max-w-[75%] flex flex-col",
+          "max-w-[78%] flex flex-col",
           isUser ? "items-end" : "items-start",
         )}
       >
         <div
           className={cn(
-            "px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line",
+            "px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-line",
             isUser
-              ? "bg-blue-600 text-white rounded-2xl rounded-tr-md"
-              : "bg-gray-100 text-gray-900 rounded-2xl rounded-tl-md",
+              ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-2xl rounded-br-md shadow-md shadow-blue-600/10"
+              : "bg-muted/60 backdrop-blur-sm text-foreground rounded-2xl rounded-bl-md border border-border/40",
           )}
         >
           {message.content}
         </div>
-        <span className="text-[10px] text-gray-400 mt-1 px-1">{timeStr}</span>
+        <span
+          className={cn(
+            "text-[10px] text-muted-foreground/60 mt-1 px-1",
+            isUser ? "mr-1" : "ml-1",
+          )}
+        >
+          {timeStr}
+        </span>
       </div>
     </motion.div>
   );
@@ -114,21 +142,40 @@ export default function FloatingAIAssistant() {
   const [chatInput, setChatInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [notifications, setNotifications] = useState(3);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom when messages change or typing indicator appears
-  useEffect(() => {
-    if (scrollRef.current) {
-      const viewport = scrollRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]",
-      );
-      if (viewport) {
-        viewport.scrollTop = viewport.scrollHeight;
-      }
+  const getViewport = useCallback(() => {
+    return scrollRef.current?.querySelector(
+      "[data-radix-scroll-area-viewport]",
+    ) as HTMLElement | null;
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    const viewport = getViewport();
+    if (viewport) {
+      viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
     }
-  }, [messages, isTyping]);
+  }, [getViewport]);
+
+  // Auto-scroll on new messages
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping, scrollToBottom]);
+
+  // Track scroll position for "scroll to bottom" button
+  useEffect(() => {
+    const viewport = getViewport();
+    if (!viewport) return;
+    const handleScroll = () => {
+      const gap = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+      setShowScrollBtn(gap > 80);
+    };
+    viewport.addEventListener("scroll", handleScroll, { passive: true });
+    return () => viewport.removeEventListener("scroll", handleScroll);
+  }, [isOpen, isMinimized, getViewport]);
 
   // Focus input when panel opens
   useEffect(() => {
@@ -136,6 +183,14 @@ export default function FloatingAIAssistant() {
       setTimeout(() => inputRef.current?.focus(), 300);
     }
   }, [isOpen, isMinimized]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 100)}px`;
+    }
+  }, [chatInput]);
 
   const sendMessage = (text: string) => {
     if (!text.trim()) return;
@@ -151,7 +206,6 @@ export default function FloatingAIAssistant() {
     setChatInput("");
     setIsTyping(true);
 
-    // Simulate AI thinking delay
     const delay = 800 + Math.random() * 700;
     setTimeout(() => {
       const aiResponse: ChatMessage = {
@@ -165,17 +219,12 @@ export default function FloatingAIAssistant() {
     }, delay);
   };
 
-  const handleSendMessage = () => {
-    sendMessage(chatInput);
-  };
-
-  const handleQuickAction = (action: string) => {
-    sendMessage(action);
-  };
+  const handleSendMessage = () => sendMessage(chatInput);
+  const handleQuickAction = (action: string) => sendMessage(action);
 
   return (
     <>
-      {/* Floating trigger button */}
+      {/* ===== Floating trigger button ===== */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -187,53 +236,70 @@ export default function FloatingAIAssistant() {
               setIsOpen(true);
               setNotifications(0);
             }}
-            className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-2xl hover:shadow-[0_8px_30px_rgba(59,130,246,0.5)] transition-all duration-300 flex items-center justify-center group"
+            className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-shadow duration-300 flex items-center justify-center group"
           >
-            <Bot className="h-7 w-7 transition-transform group-hover:scale-110" />
+            {/* Pulse ring */}
+            <span className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping pointer-events-none" />
+            <span className="absolute inset-[-3px] rounded-full border-2 border-blue-400/30 animate-pulse-subtle pointer-events-none" />
+            <Sparkles className="h-6 w-6 transition-transform group-hover:scale-110 group-hover:rotate-12" />
             {notifications > 0 && (
-              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center ring-2 ring-white">
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-background"
+              >
                 {notifications}
-              </span>
+              </motion.span>
             )}
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Chat panel */}
+      {/* ===== Chat panel ===== */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.85, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.85, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            exit={{ opacity: 0, scale: 0.9, y: 24 }}
+            transition={{ type: "spring", stiffness: 320, damping: 28 }}
             style={{ transformOrigin: "bottom right" }}
-            className="fixed bottom-6 right-6 z-50 shadow-2xl rounded-2xl bg-white overflow-hidden flex flex-col"
+            className="fixed bottom-6 right-6 z-50 rounded-2xl overflow-hidden flex flex-col border border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl shadow-black/10"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20">
-                  <Bot className="h-5 w-5" />
+            <div className="relative flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white overflow-hidden">
+              {/* Decorative circles */}
+              <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-white/5" />
+              <div className="absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-white/5" />
+
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm border border-white/10">
+                  <Sparkles className="h-4.5 w-4.5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">AI 智能秘书</h3>
-                  <p className="text-xs text-white/80">随时为您服务</p>
+                  <h3 className="font-semibold text-sm tracking-tight">
+                    AI 智能秘书
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-soft" />
+                    <p className="text-[11px] text-white/70">在线 · 随时为您服务</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+
+              <div className="flex items-center gap-0.5 relative z-10">
                 <button
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/15 rounded-lg transition-colors"
                 >
-                  <Minimize2 className="h-4 w-4" />
+                  <Minus className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => {
                     setIsOpen(false);
                     setIsMinimized(false);
                   }}
-                  className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/15 rounded-lg transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -247,42 +313,68 @@ export default function FloatingAIAssistant() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  transition={{
+                    duration: 0.3,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
                 >
                   <div
                     className="flex flex-col"
-                    style={{ width: 440, height: 600 }}
+                    style={{ width: 420, height: 560 }}
                   >
                     {/* Chat messages area */}
-                    <ScrollArea ref={scrollRef} className="flex-1">
-                      <div className="p-4">
-                        {messages.map((message) => (
-                          <MessageBubble key={message.id} message={message} />
-                        ))}
-                        {isTyping && <TypingIndicator />}
-                      </div>
-                    </ScrollArea>
+                    <div className="relative flex-1 min-h-0">
+                      <ScrollArea ref={scrollRef} className="h-full">
+                        <div className="px-4 pt-4 pb-2">
+                          {messages.map((message) => (
+                            <MessageBubble
+                              key={message.id}
+                              message={message}
+                            />
+                          ))}
+                          {isTyping && <TypingIndicator />}
+                        </div>
+                      </ScrollArea>
+
+                      {/* Scroll to bottom button */}
+                      <AnimatePresence>
+                        {showScrollBtn && (
+                          <motion.button
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            onClick={scrollToBottom}
+                            className="absolute bottom-2 left-1/2 -translate-x-1/2 h-7 w-7 rounded-full bg-background/90 backdrop-blur-sm border border-border/60 shadow-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          </motion.button>
+                        )}
+                      </AnimatePresence>
+                    </div>
 
                     {/* Quick action chips */}
-                    <div className="px-4 py-2 border-t border-gray-100">
-                      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                        {quickActions.map((action) => (
-                          <Badge
-                            key={action}
-                            variant="secondary"
-                            className="flex-shrink-0 cursor-pointer px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 transition-colors whitespace-nowrap select-none"
-                            onClick={() => handleQuickAction(action)}
-                          >
-                            {action}
-                          </Badge>
-                        ))}
+                    <div className="px-4 py-2.5 border-t border-border/40">
+                      <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+                        {quickActions.map((action) => {
+                          const Icon = ICON_MAP[action.icon];
+                          return (
+                            <button
+                              key={action.label}
+                              onClick={() => handleQuickAction(action.label)}
+                              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/60 rounded-full transition-all duration-200 hover:shadow-sm active:scale-[0.97] select-none"
+                            >
+                              {Icon && <Icon className="h-3 w-3 opacity-70" />}
+                              {action.label}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
                     {/* Input area */}
-                    <div className="border-t border-gray-100 p-3 bg-gray-50/50">
-                      <div className="flex gap-2">
-                        <Input
+                    <div className="border-t border-border/40 px-3 py-3 bg-muted/20">
+                      <div className="flex items-end gap-2 bg-background rounded-xl border border-border/60 px-3 py-2 focus-within:border-blue-400/60 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all duration-200">
+                        <textarea
                           ref={inputRef}
                           placeholder="输入您的问题或指令..."
                           value={chatInput}
@@ -294,16 +386,21 @@ export default function FloatingAIAssistant() {
                             }
                           }}
                           disabled={isTyping}
-                          className="text-sm h-10 flex-1 rounded-xl border-gray-200 bg-white focus-visible:ring-blue-500"
+                          rows={1}
+                          className="flex-1 text-[13px] bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/50 leading-relaxed min-h-[24px] max-h-[100px] py-0.5 disabled:opacity-50"
                         />
-                        <Button
-                          size="sm"
-                          className="h-10 w-10 rounded-xl bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+                        <button
                           onClick={handleSendMessage}
                           disabled={!chatInput.trim() || isTyping}
+                          className={cn(
+                            "flex-shrink-0 h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200",
+                            chatInput.trim() && !isTyping
+                              ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20 hover:bg-blue-700 active:scale-95"
+                              : "bg-muted text-muted-foreground/40",
+                          )}
                         >
-                          <Send className="h-4 w-4" />
-                        </Button>
+                          <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.5} />
+                        </button>
                       </div>
                     </div>
                   </div>

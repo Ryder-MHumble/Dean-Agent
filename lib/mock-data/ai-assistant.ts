@@ -1,11 +1,16 @@
 import type { ChatMessage } from "@/lib/types/ai-assistant";
 
-export const quickActions = [
-  "今日日程概览",
-  "生成周报草稿",
-  "查看政策匹配",
-  "人才动态摘要",
-  "本周状态汇总",
+export interface QuickAction {
+  label: string;
+  icon: string;
+}
+
+export const quickActions: QuickAction[] = [
+  { label: "今日日程概览", icon: "calendar" },
+  { label: "生成周报草稿", icon: "fileText" },
+  { label: "查看政策匹配", icon: "search" },
+  { label: "人才动态摘要", icon: "users" },
+  { label: "本周状态汇总", icon: "barChart" },
 ];
 
 export const initialMessage: ChatMessage = {

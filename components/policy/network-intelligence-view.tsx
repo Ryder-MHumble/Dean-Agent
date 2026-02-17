@@ -1,6 +1,6 @@
 "use client"
 
-import { Users, MessageSquare, ExternalLink, AlertCircle, Globe } from "lucide-react"
+import { Users, MessageSquare, ExternalLink, AlertCircle, Globe, Loader2, WifiOff } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -8,21 +8,10 @@ import { Button } from "@/components/ui/button"
 import { StaggerContainer, StaggerItem } from "@/components/motion"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { usePersonnelFeed } from "@/hooks/use-personnel-feed"
+import type { PersonnelChangeItem } from "@/lib/types/personnel-intel"
 
-// ── Types ──────────────────────────────────────────────
-
-interface PersonnelEntry {
-  id: string
-  group: "action" | "watch"
-  initials: string
-  avatarColor: string
-  name: string
-  change: string
-  relation: "Strong" | "Moderate" | "Weak"
-  relationStrength: number
-  note?: string
-  actionSuggestion?: string
-}
+// ── Right-column mock data (no backend source yet) ──────
 
 interface TalentReturnEntry {
   name: string
@@ -38,55 +27,6 @@ interface NoContactEntry {
   lastContact: string
 }
 
-// ── Mock Data ──────────────────────────────────────────
-
-const personnelData: PersonnelEntry[] = [
-  {
-    id: "1",
-    group: "action",
-    initials: "LZ",
-    avatarColor: "bg-blue-500",
-    name: "李 张",
-    change: "任清华大学AI副院长",
-    relation: "Strong",
-    relationStrength: 4,
-    note: "863计划前合作者。良好的合作渠道。",
-    actionSuggestion: "建议发送祝贺信并安排会面",
-  },
-  {
-    id: "2",
-    group: "action",
-    initials: "JC",
-    avatarColor: "bg-green-500",
-    name: "陈 静",
-    change: "晋升，中科院院士",
-    relation: "Moderate",
-    relationStrength: 3,
-    actionSuggestion: "建议发送祝贺函",
-  },
-  {
-    id: "3",
-    group: "watch",
-    initials: "WW",
-    avatarColor: "bg-red-500",
-    name: "王 伟",
-    change: "调至MIT，系主任",
-    relation: "Weak",
-    relationStrength: 2,
-  },
-  {
-    id: "4",
-    group: "watch",
-    initials: "ZL",
-    avatarColor: "bg-purple-500",
-    name: "赵 磊",
-    change: "任国家自然科学基金委处长",
-    relation: "Moderate",
-    relationStrength: 3,
-    note: "与我院王教授同窗，可通过其建立联系",
-  },
-]
-
 const talentReturnData: TalentReturnEntry[] = [
   { name: "张明远", field: "计算机视觉", intent: "高", hIndex: 42 },
   { name: "刘思琪", field: "自然语言处理", intent: "中", hIndex: 35 },
@@ -101,16 +41,52 @@ const noContactData: NoContactEntry[] = [
 
 // ── Helpers ─────────────────────────────────────────────
 
-const relationColorMap: Record<string, string> = {
-  Strong: "bg-emerald-500",
-  Moderate: "bg-amber-500",
-  Weak: "bg-gray-400",
+const AVATAR_COLORS = [
+  "bg-blue-500", "bg-green-500", "bg-purple-500", "bg-red-500",
+  "bg-teal-500", "bg-orange-500", "bg-cyan-500", "bg-pink-500",
+  "bg-indigo-500", "bg-amber-600",
+]
+
+function getInitials(name: string): string {
+  // Chinese name — take last 1-2 chars as initials display
+  return name.length >= 2 ? name.slice(0, 2) : name
 }
 
-const relationLabelMap: Record<string, string> = {
-  Strong: "强关系",
-  Moderate: "中等关系",
-  Weak: "弱关系",
+function getAvatarColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+}
+
+/** Map relevance 0-100 → 1-4 strength bars */
+function relevanceToStrength(relevance: number): number {
+  if (relevance >= 75) return 4
+  if (relevance >= 50) return 3
+  if (relevance >= 25) return 2
+  return 1
+}
+
+function relevanceToLabel(relevance: number): string {
+  if (relevance >= 75) return "高相关"
+  if (relevance >= 50) return "较相关"
+  if (relevance >= 25) return "一般"
+  return "弱相关"
+}
+
+const strengthColorMap: Record<number, string> = {
+  4: "bg-emerald-500",
+  3: "bg-amber-500",
+  2: "bg-gray-400",
+  1: "bg-gray-300",
+}
+
+const importanceBadgeStyle: Record<string, string> = {
+  "紧急": "border-red-200 bg-red-50 text-red-700",
+  "重要": "border-amber-200 bg-amber-50 text-amber-700",
+  "关注": "border-blue-200 bg-blue-50 text-blue-700",
+  "一般": "border-gray-200 bg-gray-50 text-gray-500",
 }
 
 const intentDotColor: Record<string, string> = {
@@ -121,7 +97,8 @@ const intentDotColor: Record<string, string> = {
 
 // ── Sub-components ──────────────────────────────────────
 
-function RelationBar({ strength }: { strength: number }) {
+function RelevanceBar({ strength }: { strength: number }) {
+  const color = strengthColorMap[strength] || "bg-gray-300"
   return (
     <div className="flex items-center gap-0.5">
       {Array.from({ length: 4 }).map((_, i) => (
@@ -129,7 +106,7 @@ function RelationBar({ strength }: { strength: number }) {
           key={i}
           className={cn(
             "h-3 w-1.5 rounded-sm transition-colors",
-            i < strength ? relationColorMap[strength >= 4 ? "Strong" : strength >= 3 ? "Moderate" : "Weak"] : "bg-gray-200"
+            i < strength ? color : "bg-gray-200",
           )}
         />
       ))}
@@ -137,26 +114,48 @@ function RelationBar({ strength }: { strength: number }) {
   )
 }
 
-function PersonCard({ person }: { person: PersonnelEntry }) {
+function PersonCard({ person }: { person: PersonnelChangeItem }) {
+  const strength = relevanceToStrength(person.relevance)
+  const initials = getInitials(person.name)
+  const avatarColor = getAvatarColor(person.name)
+  const changeText = `${person.action}${person.position}`
+
   return (
     <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
       <Avatar className="h-9 w-9 flex-shrink-0">
-        <AvatarFallback className={cn(person.avatarColor, "text-white text-xs font-medium")}>
-          {person.initials}
+        <AvatarFallback className={cn(avatarColor, "text-white text-xs font-medium")}>
+          {initials}
         </AvatarFallback>
       </Avatar>
 
       <div className="flex-1 min-w-0 space-y-1.5">
-        {/* Name + change */}
-        <div>
+        {/* Name + importance + change */}
+        <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-sm font-medium text-foreground">{person.name}</span>
-          <span className="text-xs text-muted-foreground ml-1.5">{person.change}</span>
+          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", importanceBadgeStyle[person.importance])}>
+            {person.importance}
+          </Badge>
+          <span className="text-xs text-muted-foreground">{changeText}</span>
         </div>
 
-        {/* Relation bar + label */}
+        {/* Department + date */}
+        {(person.department || person.date) && (
+          <p className="text-[11px] text-muted-foreground">
+            {person.department && <span>{person.department}</span>}
+            {person.department && person.date && <span className="mx-1">·</span>}
+            {person.date && <span>{person.date}</span>}
+          </p>
+        )}
+
+        {/* Relevance bar + label + score */}
         <div className="flex items-center gap-2">
-          <RelationBar strength={person.relationStrength} />
-          <span className="text-[10px] text-muted-foreground">{relationLabelMap[person.relation]}</span>
+          <RelevanceBar strength={strength} />
+          <span className="text-[10px] text-muted-foreground">
+            {relevanceToLabel(person.relevance)}
+          </span>
+          <span className="text-[10px] text-muted-foreground font-mono">
+            {person.relevance}
+          </span>
         </div>
 
         {/* Note */}
@@ -164,11 +163,29 @@ function PersonCard({ person }: { person: PersonnelEntry }) {
           <p className="text-xs text-muted-foreground leading-relaxed">{person.note}</p>
         )}
 
+        {/* AI Insight */}
+        {person.aiInsight && (
+          <p className="text-xs text-blue-700 bg-blue-50 rounded px-2 py-1 leading-relaxed">
+            {person.aiInsight}
+          </p>
+        )}
+
         {/* Action suggestion */}
         {person.actionSuggestion && (
           <p className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1 leading-relaxed">
-            {person.actionSuggestion}
+            💡 {person.actionSuggestion}
           </p>
+        )}
+
+        {/* Signals */}
+        {person.signals.length > 0 && (
+          <div className="flex items-center gap-1 flex-wrap">
+            {person.signals.map((s) => (
+              <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0">
+                {s}
+              </Badge>
+            ))}
+          </div>
         )}
 
         {/* Inline action buttons */}
@@ -177,10 +194,19 @@ function PersonCard({ person }: { person: PersonnelEntry }) {
             <MessageSquare className="h-3 w-3" />
             发消息
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" onClick={() => toast(`查看${person.name}的详细资料`, { description: person.change })}>
-            <ExternalLink className="h-3 w-3" />
-            查看详情
-          </Button>
+          {person.sourceUrl ? (
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" asChild>
+              <a href={person.sourceUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3 w-3" />
+                查看原文
+              </a>
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" onClick={() => toast(`${person.name}的详细资料`, { description: changeText })}>
+              <ExternalLink className="h-3 w-3" />
+              查看详情
+            </Button>
+          )}
         </div>
       </div>
     </div>
@@ -194,8 +220,10 @@ function PersonnelGroup({
 }: {
   title: string
   variant: "action" | "watch"
-  items: PersonnelEntry[]
+  items: PersonnelChangeItem[]
 }) {
+  if (items.length === 0) return null
+
   return (
     <div className={cn("rounded-lg p-4", variant === "action" ? "bg-amber-50/60" : "bg-background")}>
       {/* Group header */}
@@ -219,11 +247,22 @@ function PersonnelGroup({
 
 // ── Right Column Cards ──────────────────────────────────
 
-function RelationshipHeatmap() {
+function PersonnelOverview({
+  actionCount,
+  watchCount,
+  highRelevance,
+}: {
+  actionCount: number
+  watchCount: number
+  highRelevance: number
+}) {
+  const total = actionCount + watchCount
+  const maxCount = Math.max(actionCount, watchCount, highRelevance, 1)
+
   const metrics = [
-    { label: "强关系", count: 12, color: "bg-emerald-500", barWidth: "w-3/12" },
-    { label: "中关系", count: 28, color: "bg-amber-500", barWidth: "w-7/12" },
-    { label: "弱关系", count: 45, color: "bg-gray-400", barWidth: "w-full" },
+    { label: "需要行动", count: actionCount, color: "bg-amber-500" },
+    { label: "持续关注", count: watchCount, color: "bg-blue-400" },
+    { label: "高相关度", count: highRelevance, color: "bg-emerald-500" },
   ]
 
   return (
@@ -231,7 +270,7 @@ function RelationshipHeatmap() {
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
           <Globe className="h-4 w-4 text-muted-foreground" />
-          关系网络概览
+          人事动态概览
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -239,15 +278,18 @@ function RelationshipHeatmap() {
           <div key={m.label} className="space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">{m.label}</span>
-              <span className="text-xs font-medium">{m.count}人</span>
+              <span className="text-xs font-medium">{m.count}条</span>
             </div>
             <div className="h-2 w-full rounded-full bg-gray-100">
-              <div className={cn("h-full rounded-full transition-all", m.color, m.barWidth)} />
+              <div
+                className={cn("h-full rounded-full transition-all", m.color)}
+                style={{ width: `${(m.count / maxCount) * 100}%` }}
+              />
             </div>
           </div>
         ))}
         <div className="pt-1 text-[10px] text-muted-foreground text-right">
-          共 {metrics.reduce((sum, m) => sum + m.count, 0)} 人
+          共 {total} 条变动
         </div>
       </CardContent>
     </Card>
@@ -324,11 +366,49 @@ function NoContactWarning() {
   )
 }
 
+// ── Loading State ───────────────────────────────────────
+
+function PersonnelLoading() {
+  return (
+    <div className="grid grid-cols-12 gap-6">
+      <div className="col-span-7">
+        <Card className="shadow-card rounded-xl">
+          <CardContent className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">加载人事动态...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <div className="col-span-5 space-y-6">
+        <Card className="shadow-card rounded-xl h-40" />
+        <Card className="shadow-card rounded-xl h-40" />
+        <Card className="shadow-card rounded-xl h-40" />
+      </div>
+    </div>
+  )
+}
+
 // ── Main Component ──────────────────────────────────────
 
 export default function NetworkIntelligenceView() {
-  const actionGroup = personnelData.filter((p) => p.group === "action")
-  const watchGroup = personnelData.filter((p) => p.group === "watch")
+  const {
+    items,
+    stats,
+    isLoading,
+    isUsingMock,
+    actionCount,
+    watchCount,
+  } = usePersonnelFeed()
+
+  if (isLoading) {
+    return <PersonnelLoading />
+  }
+
+  const actionGroup = items.filter((p) => p.group === "action")
+  const watchGroup = items.filter((p) => p.group === "watch")
+  const highRelevance = stats?.high_relevance_count ?? items.filter((p) => p.relevance >= 60).length
 
   return (
     <StaggerContainer className="grid grid-cols-12 gap-6">
@@ -336,21 +416,43 @@ export default function NetworkIntelligenceView() {
       <StaggerItem className="col-span-7">
         <Card className="shadow-card hover:shadow-card-hover rounded-xl transition-all duration-300">
           <CardHeader className="pb-4">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              人事变动追踪
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                人事变动追踪
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                {isUsingMock && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1 text-amber-600 border-amber-200">
+                    <WifiOff className="h-3 w-3" />
+                    离线数据
+                  </Badge>
+                )}
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                  {items.length} 条变动
+                </Badge>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <PersonnelGroup title="需要行动" variant="action" items={actionGroup} />
             <PersonnelGroup title="关注动态" variant="watch" items={watchGroup} />
+            {items.length === 0 && (
+              <div className="text-center py-8 text-sm text-muted-foreground">
+                暂无人事变动数据
+              </div>
+            )}
           </CardContent>
         </Card>
       </StaggerItem>
 
-      {/* Right column - Heatmap + Talent + No-Contact */}
+      {/* Right column - Overview + Talent + No-Contact */}
       <StaggerItem className="col-span-5 space-y-6">
-        <RelationshipHeatmap />
+        <PersonnelOverview
+          actionCount={actionCount}
+          watchCount={watchCount}
+          highRelevance={highRelevance}
+        />
         <TalentReturnMonitor />
         <NoContactWarning />
       </StaggerItem>

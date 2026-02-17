@@ -5,6 +5,18 @@ import type {
   PeerNewsItem,
 } from "@/lib/types/university-eco";
 
+// Dynamic dates for realistic time grouping (今天/本周/更早)
+const _now = new Date();
+const _iso = (d: Date) => d.toISOString().slice(0, 10);
+const _daysAgo = (n: number) => _iso(new Date(_now.getTime() - n * 86400000));
+const _today = _iso(_now);
+const _yesterday = _daysAgo(1);
+const _3daysAgo = _daysAgo(3);
+const _5daysAgo = _daysAgo(5);
+const _8daysAgo = _daysAgo(8);
+const _12daysAgo = _daysAgo(12);
+const _14daysAgo = _daysAgo(14);
+
 export const mockPeers: PeerInstitution[] = [
   {
     id: "c1",
@@ -56,7 +68,7 @@ export const mockPersonnelChanges: PersonnelChange[] = [
     institution: "清华大学",
     type: "任命",
     impact: "重大",
-    date: "2025-05-10",
+    date: _today,
     background: "ACM Fellow，长期从事计算机视觉和多模态学习研究，H-index 85",
     aiAnalysis:
       "张伟教授升任AI研究院院长，意味着清华将进一步加强人工智能方向的战略投入。该任命可能带来清华AI研究院在资源获取和人才招募方面的显著提升。建议密切关注其上任后的战略规划和人才招聘动向。",
@@ -71,7 +83,7 @@ export const mockPersonnelChanges: PersonnelChange[] = [
     institution: "北京大学",
     type: "离职",
     impact: "重大",
-    date: "2025-05-06",
+    date: _today,
     background: "国家杰青，NLP方向领军人物，带走3名博士后",
     aiAnalysis:
       "李明远教授的离职对北大NLP方向将产生较大冲击，其团队核心成员可能面临流散。这对我院是一个引才窗口期。建议立即评估其团队中可争取的青年人才，特别是NLP方向的博士后研究员。",
@@ -86,7 +98,7 @@ export const mockPersonnelChanges: PersonnelChange[] = [
     institution: "中科院",
     type: "任命",
     impact: "较大",
-    date: "2025-04-28",
+    date: _yesterday,
     background: "量子计算领域顶级专家，Nature/Science发文6篇",
     aiAnalysis:
       "陈思远研究员主导的量子纠错码研究近期取得重大突破。其担任实验室主任后，中科院在量子计算领域的投入预计将大幅增加。建议评估与该实验室建立合作关系的可行性。",
@@ -101,7 +113,7 @@ export const mockPersonnelChanges: PersonnelChange[] = [
     institution: "浙江大学",
     type: "调动",
     impact: "较大",
-    date: "2025-04-22",
+    date: _5daysAgo,
     background: "新能源材料专家，与宁德时代等企业有深度合作",
     aiAnalysis:
       "赵俊峰教授调任能源研究院常务副院长，预示浙大将进一步整合能源方向的产学研资源。其与产业界的密切关系可能为浙大带来更多横向经费和成果转化机会。建议关注浙大能源研究院的发展动向。",
@@ -116,7 +128,7 @@ export const mockPersonnelChanges: PersonnelChange[] = [
     institution: "上海交通大学",
     type: "离职",
     impact: "一般",
-    date: "2025-04-15",
+    date: _12daysAgo,
     background: "集成电路设计专家，拥有多项AI芯片专利",
     aiAnalysis:
       "王强教授离职创业对上交电子信息学院有一定影响，但其方向偏向产业化，对学术竞争格局影响有限。可关注其创业公司的技术路线，评估未来产学研合作的可能性。",
@@ -132,7 +144,7 @@ export const mockResearchOutputs: ResearchOutput[] = [
     institution: "清华大学",
     type: "论文",
     influence: "高",
-    date: "2025-05-08",
+    date: _today,
     field: "具身智能",
     authors: "张明远、李华、王磊等",
     aiAnalysis:
@@ -146,7 +158,7 @@ export const mockResearchOutputs: ResearchOutput[] = [
     institution: "中科院",
     type: "论文",
     influence: "高",
-    date: "2025-05-05",
+    date: _yesterday,
     field: "量子计算",
     authors: "陈思远、刘伟航等",
     aiAnalysis:
@@ -160,7 +172,7 @@ export const mockResearchOutputs: ResearchOutput[] = [
     institution: "浙江大学",
     type: "专利",
     influence: "中",
-    date: "2025-04-28",
+    date: _3daysAgo,
     field: "新能源材料",
     authors: "赵俊峰团队",
     aiAnalysis:
@@ -174,7 +186,7 @@ export const mockResearchOutputs: ResearchOutput[] = [
     institution: "北京大学",
     type: "获奖",
     influence: "高",
-    date: "2025-04-20",
+    date: _8daysAgo,
     field: "脑科学",
     authors: "王建华教授团队",
     aiAnalysis:
@@ -188,7 +200,7 @@ export const mockResearchOutputs: ResearchOutput[] = [
     institution: "上海交通大学",
     type: "论文",
     influence: "中",
-    date: "2025-04-15",
+    date: _14daysAgo,
     field: "自动驾驶",
     authors: "刘昊天、周明等",
     aiAnalysis:
@@ -207,7 +219,7 @@ export const mockPeerNews: PeerNewsItem[] = [
     sourceName: "清华大学新闻网",
     group: "university_news",
     url: "https://www.tsinghua.edu.cn/news/zxdt/example1.htm",
-    date: "2026-02-15",
+    date: _today,
     summary:
       "清华大学宣布正式成立具身智能研究中心，由交叉信息研究院牵头，联合自动化系、计算机系共同建设。首批引进12名海外青年学者，聚焦人形机器人控制、多模态感知融合和仿真训练平台三大方向。",
     tags: ["university", "tsinghua", "具身智能", "人才引进"],
@@ -219,7 +231,7 @@ export const mockPeerNews: PeerNewsItem[] = [
     sourceName: "北京大学新闻网",
     group: "university_news",
     url: "https://news.pku.edu.cn/xwzh/example2.htm",
-    date: "2026-02-15",
+    date: _today,
     summary:
       "北京大学智能学院发布多模态推理模型PKU-VL3，在数学推理和图表理解任务上刷新多项基准，模型已开源并支持本地部署。",
     tags: ["university", "pku", "多模态", "大模型"],
@@ -520,7 +532,7 @@ export const mockPeerNews: PeerNewsItem[] = [
     sourceName: "北京智源人工智能研究院(BAAI)",
     group: "ai_institutes",
     url: "https://hub.baai.ac.cn/view/example27",
-    date: "2026-02-15",
+    date: _today,
     summary:
       "智源研究院发布FlagEval 3.0评测平台，首次提出Agent能力标准化评测方法论，覆盖工具调用、多步推理、环境交互等6大维度，已接入30+主流Agent框架。",
     tags: ["institute", "baai", "AI Agent", "评测基准"],

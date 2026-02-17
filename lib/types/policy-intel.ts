@@ -46,4 +46,5 @@ export interface PolicyFeedItem {
   sourceUrl?: string;
   aiInsight?: string;
   detail?: string;
+  content?: string;
 }
