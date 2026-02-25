@@ -141,7 +141,7 @@ export default function AIDailySummary({
         </div>
         <div className="space-y-2">
           {data.paragraphs.map((segments, pIdx) => (
-            <p
+            <div
               key={pIdx}
               className="text-[13px] leading-relaxed text-muted-foreground"
             >
@@ -153,7 +153,7 @@ export default function AIDailySummary({
                   <SegmentLink key={sIdx} seg={seg} onNavigate={onNavigate} />
                 );
               })}
-            </p>
+            </div>
           ))}
         </div>
       </CardContent>

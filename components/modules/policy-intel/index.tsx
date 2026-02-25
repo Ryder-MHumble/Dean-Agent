@@ -135,7 +135,7 @@ export default function PolicyIntelModule() {
 
   return (
     <div className="p-5 flex flex-col gap-4 h-[calc(100vh-4rem)] overflow-hidden">
-      <MotionCard delay={0} className="shrink-0">
+      <MotionCard delay={0} className="shrink-0 relative z-10">
         <Card className="shadow-card">
           <CardContent className="p-4 space-y-3">
             {/* Row 1: Search + Source filter trigger */}
