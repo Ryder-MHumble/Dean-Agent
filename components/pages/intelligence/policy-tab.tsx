@@ -25,7 +25,7 @@ import DetailArticleBody from "@/components/shared/detail-article-body";
 import { useDetailView } from "@/hooks/use-detail-view";
 import type { PolicyFeedItem } from "@/lib/types/policy-intel";
 import { usePolicyFeed } from "@/hooks/use-policy-opportunities";
-import { SkeletonPolicyIntel } from "@/components/shared/skeleton-states";
+import { SkeletonSubPage } from "@/components/shared/skeleton-states";
 import { MatchBar } from "./helpers";
 
 const categoryStyle: Record<string, string> = {
@@ -62,7 +62,7 @@ export default function PolicyTab() {
   );
 
   if (isLoading) {
-    return <SkeletonPolicyIntel />;
+    return <SkeletonSubPage />;
   }
 
   return (
