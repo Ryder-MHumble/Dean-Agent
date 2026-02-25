@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,18 +8,12 @@ import {
   Activity,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
   Sparkles,
   ChevronRight,
 } from "lucide-react";
 import { ExpandableSection } from "@/components/motion";
 import { cn } from "@/lib/utils";
-import type {
-  TechTopic,
-  TrendingPost,
-  TopicNews,
-  KOLVoice,
-} from "@/lib/types/tech-frontier";
+import type { TechTopic } from "@/lib/types/tech-frontier";
 
 const heatConfig = {
   surging: {
@@ -49,55 +42,24 @@ const heatConfig = {
   },
 };
 
-const platformColors: Record<string, string> = {
-  X: "bg-black text-white",
-  YouTube: "bg-red-600 text-white",
-  ArXiv: "bg-red-100 text-red-700",
-  GitHub: "bg-gray-800 text-white",
-  微信公众号: "bg-green-600 text-white",
-  知乎: "bg-blue-600 text-white",
-};
-
-const kolPlatformColors: Record<string, string> = {
-  X: "bg-black text-white",
-  会议: "bg-indigo-100 text-indigo-700",
-  论文: "bg-red-100 text-red-700",
-  博客: "bg-emerald-100 text-emerald-700",
-  播客: "bg-purple-100 text-purple-700",
-};
-
-const newsTypeColors: Record<string, { color: string; bg: string }> = {
-  投融资: { color: "text-blue-700", bg: "bg-blue-50 border-blue-200" },
-  新产品: { color: "text-green-700", bg: "bg-green-50 border-green-200" },
-  政策: { color: "text-purple-700", bg: "bg-purple-50 border-purple-200" },
-  收购: { color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
-  合作: { color: "text-teal-700", bg: "bg-teal-50 border-teal-200" },
-};
-
-type SignalFilter = "all" | "posts" | "news" | "kol";
-
-type SignalItem =
-  | { kind: "post"; data: TrendingPost; keyword: string }
-  | { kind: "news"; data: TopicNews }
-  | { kind: "kol"; data: KOLVoice };
-
 interface TopicCardProps {
   topic: TechTopic;
   isExpanded: boolean;
   isSelected?: boolean;
+  /** When detail panel is open, render a compact row */
+  compact?: boolean;
   onToggleExpand: () => void;
-  onViewAll: () => void;
+  onOpenDetail: () => void;
 }
 
 export default function TopicCard({
   topic,
   isExpanded,
   isSelected,
+  compact,
   onToggleExpand,
-  onViewAll,
+  onOpenDetail,
 }: TopicCardProps) {
-  const [filter, setFilter] = useState<SignalFilter>("all");
-
   const heat = heatConfig[topic.heatTrend];
   const HeatIcon = heat.icon;
 
@@ -108,67 +70,28 @@ export default function TopicCard({
   const newsCount = topic.relatedNews.length;
   const kolCount = topic.kolVoices.length;
 
-  const allSignals: SignalItem[] = useMemo(() => {
-    const items: SignalItem[] = [];
-    for (const kw of topic.trendingKeywords) {
-      for (const post of kw.posts) {
-        items.push({ kind: "post", data: post, keyword: kw.keyword });
-      }
-    }
-    for (const news of topic.relatedNews) {
-      items.push({ kind: "news", data: news });
-    }
-    for (const kol of topic.kolVoices) {
-      items.push({ kind: "kol", data: kol });
-    }
-    items.sort((a, b) => {
-      const dateA = "date" in a.data ? a.data.date : "";
-      const dateB = "date" in b.data ? b.data.date : "";
-      return dateB.localeCompare(dateA);
-    });
-    return items;
-  }, [topic]);
-
-  const filteredSignals = useMemo(() => {
-    if (filter === "all") return allSignals;
-    if (filter === "posts") return allSignals.filter((s) => s.kind === "post");
-    if (filter === "news") return allSignals.filter((s) => s.kind === "news");
-    return allSignals.filter((s) => s.kind === "kol");
-  }, [allSignals, filter]);
-
-  const previewSignals = filteredSignals.slice(0, 4);
-
   return (
     <div className={cn("border-b last:border-0", isSelected && "bg-muted/40")}>
       {/* Collapsed Header */}
       <button
         type="button"
-        className="w-full grid grid-cols-[1fr_80px_90px_60px_100px_30px] gap-2 px-4 py-3.5 items-center text-left hover:bg-muted/30 transition-colors group cursor-pointer"
+        className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-muted/30 transition-colors group cursor-pointer"
         onClick={onToggleExpand}
       >
-        <div className="flex items-center gap-2">
+        {/* Name */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           {topic.gapLevel === "high" && (
             <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse-subtle shrink-0" />
           )}
-          <span className="text-sm font-medium group-hover:text-blue-600 transition-colors">
+          <span className="text-sm font-medium group-hover:text-blue-600 transition-colors truncate">
             {topic.topic}
           </span>
-          <div className="flex items-center gap-1 ml-1">
-            {topic.tags.slice(0, 2).map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="text-[9px] px-1.5 py-0"
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
         </div>
 
+        {/* Heat badge - always visible */}
         <div
           className={cn(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium",
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium shrink-0",
             heat.bg,
             heat.color,
           )}
@@ -177,44 +100,52 @@ export default function TopicCard({
           {heat.label}
         </div>
 
-        <Badge
-          variant="outline"
-          className={cn("text-[10px] w-fit", {
-            "border-green-200 bg-green-50 text-green-700":
-              topic.ourStatus === "deployed",
-            "border-amber-200 bg-amber-50 text-amber-700":
-              topic.ourStatus === "weak",
-            "border-red-200 bg-red-50 text-red-700": topic.ourStatus === "none",
-          })}
-        >
-          {topic.ourStatusLabel}
-        </Badge>
+        {/* Extra badges - hidden in compact mode */}
+        {!compact && (
+          <>
+            <Badge
+              variant="outline"
+              className={cn("text-[10px] shrink-0", {
+                "border-green-200 bg-green-50 text-green-700":
+                  topic.ourStatus === "deployed",
+                "border-amber-200 bg-amber-50 text-amber-700":
+                  topic.ourStatus === "weak",
+                "border-red-200 bg-red-50 text-red-700":
+                  topic.ourStatus === "none",
+              })}
+            >
+              {topic.ourStatusLabel}
+            </Badge>
 
-        <Badge
-          variant="outline"
-          className={cn("text-[10px] w-fit", {
-            "border-red-200 bg-red-50 text-red-700": topic.gapLevel === "high",
-            "border-amber-200 bg-amber-50 text-amber-700":
-              topic.gapLevel === "medium",
-            "border-green-200 bg-green-50 text-green-700":
-              topic.gapLevel === "low",
-          })}
-        >
-          {topic.gapLevel === "high"
-            ? "高"
-            : topic.gapLevel === "medium"
-              ? "中"
-              : "低"}
-        </Badge>
+            <Badge
+              variant="outline"
+              className={cn("text-[10px] shrink-0", {
+                "border-red-200 bg-red-50 text-red-700":
+                  topic.gapLevel === "high",
+                "border-amber-200 bg-amber-50 text-amber-700":
+                  topic.gapLevel === "medium",
+                "border-green-200 bg-green-50 text-green-700":
+                  topic.gapLevel === "low",
+              })}
+            >
+              缺口
+              {topic.gapLevel === "high"
+                ? "高"
+                : topic.gapLevel === "medium"
+                  ? "中"
+                  : "低"}
+            </Badge>
 
-        <span className="text-xs text-muted-foreground">
-          {topic.totalSignals} 条信号
-        </span>
+            <span className="text-[11px] text-muted-foreground shrink-0">
+              {topic.totalSignals}信号
+            </span>
+          </>
+        )}
 
         {isExpanded ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
         )}
       </button>
 
@@ -234,190 +165,21 @@ export default function TopicCard({
             </p>
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex items-center gap-1.5">
-            {[
-              { key: "all" as const, label: `全部(${allSignals.length})` },
-              { key: "posts" as const, label: `动态(${postCount})` },
-              { key: "news" as const, label: `新闻(${newsCount})` },
-              { key: "kol" as const, label: `KOL(${kolCount})` },
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                className={cn(
-                  "px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors",
-                  filter === key
-                    ? "bg-foreground text-background"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted",
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFilter(key);
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Signal Preview List */}
-          <div className="space-y-1.5">
-            {previewSignals.map((signal) => {
-              if (signal.kind === "post") {
-                const post = signal.data;
-                return (
-                  <a
-                    key={post.id}
-                    href={post.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-2.5 p-2 rounded-md hover:bg-muted/40 transition-colors group/item"
-                  >
-                    <Badge
-                      className={cn(
-                        "text-[9px] px-1.5 py-0.5 shrink-0 mt-0.5",
-                        platformColors[post.platform] ||
-                          "bg-gray-100 text-gray-700",
-                      )}
-                    >
-                      {post.platform}
-                    </Badge>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-medium group-hover/item:text-blue-600 transition-colors line-clamp-1">
-                          {post.title}
-                        </span>
-                        <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
-                        <span>{post.author}</span>
-                        <span>{post.date}</span>
-                        {post.engagement && (
-                          <span className="font-medium text-foreground/70">
-                            {post.engagement}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </a>
-                );
-              }
-
-              if (signal.kind === "news") {
-                const news = signal.data;
-                const tc = newsTypeColors[news.type] || {
-                  color: "text-gray-700",
-                  bg: "bg-gray-50",
-                };
-                return (
-                  <a
-                    key={news.id}
-                    href={news.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-2.5 p-2 rounded-md hover:bg-muted/40 transition-colors group/item"
-                  >
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[9px] px-1.5 py-0.5 shrink-0 mt-0.5",
-                        tc.bg,
-                        tc.color,
-                      )}
-                    >
-                      {news.type}
-                    </Badge>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-medium group-hover/item:text-blue-600 transition-colors line-clamp-1">
-                          {news.title}
-                        </span>
-                        <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
-                        <span>{news.source}</span>
-                        <span>{news.date}</span>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "text-[8px] px-1 py-0",
-                            news.impact === "重大"
-                              ? "border-red-200 text-red-600"
-                              : news.impact === "较大"
-                                ? "border-amber-200 text-amber-600"
-                                : "border-gray-200 text-gray-500",
-                          )}
-                        >
-                          {news.impact}
-                        </Badge>
-                      </div>
-                    </div>
-                  </a>
-                );
-              }
-
-              // KOL Voice
-              const kol = signal.data;
-              return (
-                <a
-                  key={kol.id}
-                  href={kol.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-start gap-2.5 p-2 rounded-md hover:bg-muted/40 transition-colors group/item"
-                >
-                  <Badge
-                    className={cn(
-                      "text-[9px] px-1.5 py-0.5 shrink-0 mt-0.5",
-                      kolPlatformColors[kol.platform] ||
-                        "bg-gray-100 text-gray-700",
-                    )}
-                  >
-                    {kol.name}
-                  </Badge>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium group-hover/item:text-blue-600 transition-colors line-clamp-1">
-                        &ldquo;{kol.statement}&rdquo;
-                      </span>
-                      <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
-                      <span>{kol.affiliation}</span>
-                      <span>{kol.date}</span>
-                      <Badge
-                        variant="outline"
-                        className={cn("text-[8px] px-1 py-0", {
-                          "border-red-200 text-red-600":
-                            kol.influence === "极高",
-                          "border-amber-200 text-amber-600":
-                            kol.influence === "高",
-                          "border-gray-200 text-gray-500":
-                            kol.influence === "中",
-                        })}
-                      >
-                        影响力{kol.influence}
-                      </Badge>
-                    </div>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-
-          {/* View All Button */}
-          <div className="flex justify-end pt-1">
+          {/* Stats row */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
+              动态 {postCount} · 新闻 {newsCount} · KOL {kolCount}
+            </span>
             <Button
               variant="ghost"
               size="sm"
               className="text-xs text-blue-600 hover:text-blue-700 gap-1"
               onClick={(e) => {
                 e.stopPropagation();
-                onViewAll();
+                onOpenDetail();
               }}
             >
-              查看全部 {allSignals.length} 条信号
+              查看详情
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>
           </div>

@@ -91,12 +91,20 @@ export const mockDailySummary: DailySummaryData = {
         text: "北京科委发布算力补贴政策",
         moduleId: "policy-intel",
         action: "查看政策",
+        url: "https://kw.beijing.gov.cn/art/2026/2/24/art_736_661234.html",
+        contentSnippet:
+          "北京市科学技术委员会关于印发《支持算力基础设施建设的若干措施》的通知。本措施适用于在北京市注册的人工智能企业和研究机构，重点支持算力平台建设、智能计算中心升级...",
+        sourceName: "北京科委",
       },
       "（匹配度98%，资金规模500-1000万），与我院算力平台二期高度匹配，建议李副主任牵头紧急组织申报。同时，",
       {
         text: "科技部AI专项申报截止仅剩3天",
         moduleId: "policy-intel",
         action: "督办进度",
+        url: "https://most.gov.cn/xxgk/xinxifenlei/fdzdgknr/fgzc/gfxwj/gfxwj2026/202602/t20260220_189123.htm",
+        contentSnippet:
+          "科技部关于组织申报「新一代人工智能」重大项目2026年度课题的通知。本次征集方向包括：大模型基础理论、具身智能关键技术...",
+        sourceName: "科技部",
       },
       "，材料准备进度仅30%，需督促王教授加快进度。",
     ],
@@ -115,11 +123,19 @@ export const mockDailySummary: DailySummaryData = {
         text: "清华AIR发布2项具身智能新成果",
         moduleId: "university-eco",
         action: "查看前沿",
+        url: "https://air.tsinghua.edu.cn/info/1007/2345.htm",
+        contentSnippet:
+          "清华大学智能产业研究院（AIR）发布两项具身智能最新研究成果，分别在自主导航和灵巧操作方面取得突破，相关论文已被ICRA 2026收录...",
+        sourceName: "清华AIR",
       },
       "，建议关注竞争态势并评估我院在该方向的布局。此外，",
       {
-        text: "教育部副部长近日发表研究生教育改革讲话",
+        text: "教育部副部长发表研究生教育改革讲话",
         moduleId: "talent-radar",
+        url: "https://www.moe.gov.cn/jyb_xwfb/xw_fbh/moe_2069/xwfbh_2026n/202602/t20260223_1234.html",
+        contentSnippet:
+          "教育部副部长在全国研究生教育工作会议上表示，将扩大交叉学科招生名额、完善博士生分流淘汰机制，推动产教融合培养模式改革...",
+        sourceName: "教育部",
       },
       "，交叉学科招生名额将扩大、博士生淘汰机制趋严，对我院研究生培养有直接影响。",
     ],

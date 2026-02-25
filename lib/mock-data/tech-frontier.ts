@@ -1,4 +1,10 @@
-import type { TechTopic, Opportunity } from "@/lib/types/tech-frontier";
+import type {
+  TechTopic,
+  Opportunity,
+  TechBriefing,
+  TechFrontierKPIs,
+  IndustrySignalItem,
+} from "@/lib/types/tech-frontier";
 
 export const mockTechTopics: TechTopic[] = [
   {
@@ -126,13 +132,11 @@ export const mockTechTopics: TechTopic[] = [
         posts: [
           {
             id: "p3-1",
-            title:
-              "Kling 2.0 vs Sora vs Runway Gen-4: 2025视频生成模型大横评",
+            title: "Kling 2.0 vs Sora vs Runway Gen-4: 2025视频生成模型大横评",
             platform: "YouTube",
             author: "Matt Wolfe",
             date: "2025-01-08",
-            sourceUrl:
-              "https://www.youtube.com/watch?v=VideoGenComparison2025",
+            sourceUrl: "https://www.youtube.com/watch?v=VideoGenComparison2025",
             summary:
               "对比测评三大视频生成模型，Kling 2.0在中文场景和物理一致性上表现突出。",
             engagement: "1.2M views",
@@ -183,8 +187,7 @@ export const mockTechTopics: TechTopic[] = [
             platform: "知乎",
             author: "量子位",
             date: "2025-01-11",
-            sourceUrl:
-              "https://zhuanlan.zhihu.com/p/scaling-law-debate-2025",
+            sourceUrl: "https://zhuanlan.zhihu.com/p/scaling-law-debate-2025",
             summary:
               "深度分析Scaling Law争议对国内AI研究方向的影响，建议高校调整资源配置策略。",
             engagement: "2.1k 赞同",
@@ -197,8 +200,7 @@ export const mockTechTopics: TechTopic[] = [
         id: "n2",
         title: "Google正式发布Gemini 2.0，多模态能力大幅提升",
         source: "TechCrunch",
-        sourceUrl:
-          "https://techcrunch.com/2025/01/08/google-gemini-2-launch",
+        sourceUrl: "https://techcrunch.com/2025/01/08/google-gemini-2-launch",
         type: "新产品",
         date: "2025-01-08",
         impact: "重大",
@@ -276,8 +278,7 @@ export const mockTechTopics: TechTopic[] = [
             platform: "知乎",
             author: "阿里技术",
             date: "2025-01-12",
-            sourceUrl:
-              "https://zhuanlan.zhihu.com/p/ai-coding-tools-2025",
+            sourceUrl: "https://zhuanlan.zhihu.com/p/ai-coding-tools-2025",
             summary:
               "全面梳理AI编程工具发展历程，分析Claude Code、Cursor、Copilot等工具的技术路线差异。",
             engagement: "3.4k 赞同",
@@ -290,8 +291,7 @@ export const mockTechTopics: TechTopic[] = [
         id: "n4",
         title: "百度发布文心大模型5.0，首次集成多Agent协作",
         source: "界面新闻",
-        sourceUrl:
-          "https://www.jiemian.com/article/baidu-ernie-5-multi-agent",
+        sourceUrl: "https://www.jiemian.com/article/baidu-ernie-5-multi-agent",
         type: "新产品",
         date: "2025-01-05",
         impact: "较大",
@@ -388,8 +388,7 @@ export const mockTechTopics: TechTopic[] = [
         id: "n5",
         title: "国务院发布《人工智能产业高质量发展指导意见》",
         source: "新华社",
-        sourceUrl:
-          "https://www.gov.cn/zhengce/202501/ai-industry-guidelines",
+        sourceUrl: "https://www.gov.cn/zhengce/202501/ai-industry-guidelines",
         type: "政策",
         date: "2025-01-03",
         impact: "重大",
@@ -409,8 +408,7 @@ export const mockTechTopics: TechTopic[] = [
         statement:
           "发表AI驱动分子动力学新方法（Nature正刊），Deep Potential方法可大幅加速分子模拟",
         platform: "论文",
-        sourceUrl:
-          "https://scholar.google.com/citations?user=EXAMPLE_EWN",
+        sourceUrl: "https://scholar.google.com/citations?user=EXAMPLE_EWN",
         date: "2025-01-05",
       },
     ],
@@ -468,8 +466,7 @@ export const mockTechTopics: TechTopic[] = [
             platform: "微信公众号",
             author: "芯智讯",
             date: "2025-01-08",
-            sourceUrl:
-              "https://mp.weixin.qq.com/s/qualcomm-8-elite-ai",
+            sourceUrl: "https://mp.weixin.qq.com/s/qualcomm-8-elite-ai",
             summary:
               "高通最新旗舰芯片在端侧AI推理性能上实现重大突破，引发行业对端侧AI能力边界的重新评估。",
             engagement: "8万+阅读",
@@ -573,3 +570,65 @@ export const mockOpportunities: Opportunity[] = [
     actionSuggestion: "建议立即召开教授会议讨论申报策略，5日内确定方向",
   },
 ];
+
+export const mockTechBriefing: TechBriefing = {
+  narrative:
+    "本周AI领域有3个方向热度飙升。具身智能因字节跳动SeedDance2发布热度飙升180%，AI Agent方向因Claude Code引爆编程讨论热度达+210%。端侧AI推理持续升温。我院在具身智能和端侧AI两个方向存在高缺口，需紧急关注布局。5条内参机会中2条为紧急优先级，包括ICML特邀报告和国家基金重大专项。",
+  highlights: [
+    { label: "具身智能 飙升+180%", topicId: "tp1", color: "red" },
+    { label: "AI Agent 飙升+210%", topicId: "tp3", color: "red" },
+    { label: "2个高缺口方向", color: "amber" },
+    { label: "2条紧急内参", color: "purple" },
+  ],
+  generatedAt: new Date(Date.now() - 7200000),
+};
+
+export function flattenSignals(topics: TechTopic[]): IndustrySignalItem[] {
+  const items: IndustrySignalItem[] = [];
+  for (const topic of topics) {
+    for (const news of topic.relatedNews) {
+      items.push({
+        kind: "news",
+        data: news,
+        parentTopicId: topic.id,
+        parentTopicName: topic.topic,
+        date: news.date,
+      });
+    }
+    for (const kol of topic.kolVoices) {
+      items.push({
+        kind: "kol",
+        data: kol,
+        parentTopicId: topic.id,
+        parentTopicName: topic.topic,
+        date: kol.date,
+      });
+    }
+  }
+  const seen = new Set<string>();
+  const unique = items.filter((item) => {
+    const id = item.data.id;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+  return unique.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function computeKPIs(
+  topics: TechTopic[],
+  opportunities: Opportunity[],
+): TechFrontierKPIs {
+  return {
+    totalTopics: topics.length,
+    surgingCount: topics.filter((t) => t.heatTrend === "surging").length,
+    highGapCount: topics.filter((t) => t.gapLevel === "high").length,
+    weeklyNewSignals: topics.reduce(
+      (sum, t) => sum + t.signalsSinceLastWeek,
+      0,
+    ),
+    urgentOpportunities: opportunities.filter((o) => o.priority === "紧急")
+      .length,
+    totalOpportunities: opportunities.length,
+  };
+}

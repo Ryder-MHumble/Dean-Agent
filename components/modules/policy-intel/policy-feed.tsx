@@ -1,14 +1,13 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, Calendar, Clock } from "lucide-react";
-import { StaggerContainer, StaggerItem } from "@/components/motion";
+import { Clock } from "lucide-react";
 import MasterDetailView from "@/components/shared/master-detail-view";
 import DetailArticleBody from "@/components/shared/detail-article-body";
+import DateGroupedList from "@/components/shared/date-grouped-list";
+import DataItemCard, { ItemChevron, accentConfig } from "@/components/shared/data-item-card";
 import { useDetailView } from "@/hooks/use-detail-view";
 import { cn } from "@/lib/utils";
-import { groupByDate } from "@/lib/group-by-date";
 import type { PolicyFeedItem } from "@/lib/types/policy-intel";
 
 const categoryConfig: Record<string, { color: string; bg: string }> = {
@@ -69,17 +68,6 @@ interface PolicyFeedProps {
 
 export default function PolicyFeed({ items }: PolicyFeedProps) {
   const { selectedItem, open, close, isOpen } = useDetailView<PolicyFeedItem>();
-  const groups = groupByDate(items);
-
-  if (items.length === 0) {
-    return (
-      <Card className="shadow-card">
-        <CardContent className="p-8 text-center text-muted-foreground text-sm">
-          暂无匹配的政策信息
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <MasterDetailView
@@ -182,120 +170,94 @@ export default function PolicyFeed({ items }: PolicyFeedProps) {
       }
     >
       {/* List content */}
-      <div className="space-y-4">
-        {groups.map((group) => (
-          <Card key={group.label} className="shadow-card">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  {group.label}
-                </CardTitle>
-                <Badge variant="secondary" className="text-[10px]">
-                  {group.items.length}条
-                </Badge>
+      <DateGroupedList
+        items={items}
+        className="max-h-[calc(100vh-280px)]"
+        emptyMessage="暂无匹配的政策信息"
+        renderItem={(item) => (
+          <DataItemCard
+            isSelected={selectedItem?.id === item.id}
+            onClick={() => open(item)}
+            accentColor="blue"
+          >
+            {/* Row 1: Title with optional importance dot + Chevron */}
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {(item.importance === "紧急" || item.importance === "重要") && (
+                  <span
+                    className={cn(
+                      "h-2 w-2 rounded-full shrink-0",
+                      importanceConfig[item.importance]?.dot,
+                      item.importance === "紧急" && "animate-pulse-subtle",
+                    )}
+                  />
+                )}
+                <h4
+                  className={cn(
+                    "text-sm font-semibold leading-snug flex-1 transition-colors line-clamp-1",
+                    accentConfig.blue.title,
+                  )}
+                >
+                  {item.title}
+                </h4>
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <StaggerContainer>
-                {group.items.map((item) => (
-                  <StaggerItem key={item.id}>
-                    <div
-                      className={cn(
-                        "w-full flex items-start gap-3 p-3 rounded-lg transition-all group text-left border-l-2",
-                        selectedItem?.id === item.id
-                          ? "bg-blue-50/80 border-l-blue-500 shadow-sm"
-                          : cn(
-                              importanceConfig[item.importance]?.border,
-                              importanceConfig[item.importance]?.bg,
-                              "hover:bg-muted/40 hover:shadow-sm",
-                            ),
-                      )}
-                    >
-                      <button
-                        type="button"
-                        className="flex-1 min-w-0 cursor-pointer text-left"
-                        onClick={() => open(item)}
-                      >
-                        {/* Title row */}
-                        <div className="flex items-center gap-2 mb-1">
-                          {(item.importance === "紧急" ||
-                            item.importance === "重要") && (
-                            <span
-                              className={cn(
-                                "h-2 w-2 rounded-full shrink-0",
-                                importanceConfig[item.importance]?.dot,
-                                item.importance === "紧急" &&
-                                  "animate-pulse-subtle",
-                              )}
-                            />
-                          )}
-                          <span className="text-[13px] font-semibold group-hover:text-blue-600 transition-colors line-clamp-1">
-                            {item.title}
-                          </span>
-                        </div>
-                        {/* Summary */}
-                        <p className="text-[11px] text-muted-foreground line-clamp-1 leading-relaxed mb-1.5">
-                          {item.summary}
-                        </p>
-                        {/* Meta row */}
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-[9px] px-1.5 py-0 shrink-0",
-                              categoryConfig[item.category]?.bg,
-                              categoryConfig[item.category]?.color,
-                            )}
-                          >
-                            {item.category}
-                          </Badge>
-                          <span className="text-[10px] text-muted-foreground">
-                            {item.source}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">
-                            {item.date}
-                          </span>
-                          {item.matchScore !== undefined && (
-                            <MatchBar score={item.matchScore} />
-                          )}
-                          {item.daysLeft != null && item.daysLeft > 0 && (
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "text-[9px] px-1.5 py-0 gap-0.5",
-                                item.daysLeft <= 7
-                                  ? "border-red-200 bg-red-50 text-red-600 font-semibold"
-                                  : item.daysLeft <= 30
-                                    ? "border-amber-200 bg-amber-50 text-amber-600"
-                                    : "text-muted-foreground",
-                              )}
-                            >
-                              <Clock className="h-2.5 w-2.5" />
-                              截止还剩{item.daysLeft}天
-                            </Badge>
-                          )}
-                          {item.funding && (
-                            <Badge
-                              variant="secondary"
-                              className="text-[9px] px-1.5 py-0"
-                            >
-                              {item.funding}
-                            </Badge>
-                          )}
-                        </div>
-                      </button>
-                      <div className="flex items-center shrink-0 mt-0.5">
-                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
-                      </div>
-                    </div>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <ItemChevron accentColor="blue" />
+            </div>
+            {/* Row 2: Summary */}
+            <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">
+              {item.summary}
+            </p>
+            {/* Row 3: Footer - all metadata */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-[11px] font-medium",
+                    categoryConfig[item.category]?.bg,
+                    categoryConfig[item.category]?.color,
+                  )}
+                >
+                  {item.category}
+                </Badge>
+                <span className="text-[11px] text-muted-foreground">
+                  {item.source}
+                </span>
+                {item.matchScore !== undefined && (
+                  <MatchBar score={item.matchScore} />
+                )}
+                {item.daysLeft != null && item.daysLeft > 0 && (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[9px] px-1.5 py-0 gap-0.5",
+                      item.daysLeft <= 7
+                        ? "border-red-200 bg-red-50 text-red-600 font-semibold"
+                        : item.daysLeft <= 30
+                          ? "border-amber-200 bg-amber-50 text-amber-600"
+                          : "text-muted-foreground",
+                    )}
+                  >
+                    <Clock className="h-2.5 w-2.5" />
+                    {item.daysLeft}天
+                  </Badge>
+                )}
+                {item.funding && (
+                  <Badge
+                    variant="secondary"
+                    className="text-[9px] px-1.5 py-0"
+                  >
+                    {item.funding}
+                  </Badge>
+                )}
+              </div>
+              <span className="text-[11px] text-muted-foreground shrink-0">
+                {item.date}
+              </span>
+            </div>
+          </DataItemCard>
+        )}
+      />
     </MasterDetailView>
   );
 }

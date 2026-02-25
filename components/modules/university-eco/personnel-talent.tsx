@@ -10,7 +10,6 @@ import MasterDetailView from "@/components/shared/master-detail-view";
 import DetailArticleBody from "@/components/shared/detail-article-body";
 import DateGroupedList from "@/components/shared/date-grouped-list";
 import DataItemCard, {
-  ItemAvatar,
   ItemChevron,
   accentConfig,
 } from "@/components/shared/data-item-card";
@@ -192,45 +191,40 @@ export default function PersonnelTalent() {
               onClick={() => open(change)}
               accentColor="violet"
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <ItemAvatar text={change.person.charAt(0)} />
-                  <div>
-                    <h4
-                      className={cn(
-                        "text-sm font-semibold transition-colors",
-                        accentConfig.violet.title,
-                      )}
-                    >
-                      {change.person}
-                    </h4>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-[11px] text-muted-foreground">
-                        {change.fromPosition}
-                      </span>
-                      <span className="text-[11px] text-violet-500 font-medium mx-1">
-                        →
-                      </span>
-                      <span className="text-[11px] text-muted-foreground">
-                        {change.toPosition}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ImpactBadge level={change.impact} />
-                  <ItemChevron accentColor="violet" />
-                </div>
+              {/* Row 1: Person name + position transition + Chevron */}
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <h4
+                  className={cn(
+                    "text-sm font-semibold leading-snug flex-1 transition-colors",
+                    accentConfig.violet.title,
+                  )}
+                >
+                  {change.person}
+                  <span className="text-[11px] text-muted-foreground font-normal ml-2">
+                    {change.fromPosition}
+                    <span className="text-violet-500 font-medium mx-1">→</span>
+                    {change.toPosition}
+                  </span>
+                </h4>
+                <ItemChevron accentColor="violet" />
               </div>
-              <div className="flex items-center gap-2 ml-[52px]">
-                <TypeBadge type={change.type} />
-                <span className="text-[11px] text-muted-foreground">
-                  {change.institution}
-                </span>
-              </div>
-              <p className="text-[11px] text-muted-foreground truncate ml-[52px] mt-1">
+              {/* Row 2: Background as summary */}
+              <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">
                 {change.background}
               </p>
+              {/* Row 3: Footer - badges + institution + date */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TypeBadge type={change.type} />
+                  <ImpactBadge level={change.impact} />
+                  <span className="text-[11px] text-muted-foreground">
+                    {change.institution}
+                  </span>
+                </div>
+                <span className="text-[11px] text-muted-foreground">
+                  {change.date}
+                </span>
+              </div>
             </DataItemCard>
           )}
         />

@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
+import { AnimatedTitle } from "@/components/motion";
 import { navGroups } from "@/lib/mock-data/navigation";
 import { mockNotifications } from "@/lib/mock-data/app-shell";
 
@@ -147,13 +148,24 @@ export default function AppShell({
                             "relative flex w-full items-center gap-3 rounded-xl py-2 text-sm font-medium transition-colors duration-200",
                             collapsed ? "justify-center px-0" : "px-3",
                             isActive
-                              ? "bg-blue-50/80 text-blue-600 shadow-sm"
+                              ? "text-blue-600"
                               : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                           )}
                         >
+                          {isActive && (
+                            <motion.div
+                              layoutId="sidebar-active"
+                              className="absolute inset-0 rounded-xl bg-blue-50/80 shadow-sm"
+                              transition={{
+                                type: "spring",
+                                stiffness: 350,
+                                damping: 30,
+                              }}
+                            />
+                          )}
                           <item.icon
                             className={cn(
-                              "h-[18px] w-[18px] shrink-0 transition-colors",
+                              "relative z-10 h-[18px] w-[18px] shrink-0 transition-colors",
                               isActive && "text-blue-600",
                             )}
                           />
@@ -164,7 +176,7 @@ export default function AppShell({
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -8 }}
                                 transition={{ duration: 0.18, ease: "easeOut" }}
-                                className="whitespace-nowrap overflow-hidden"
+                                className="relative z-10 whitespace-nowrap overflow-hidden"
                               >
                                 {item.label}
                               </motion.span>
@@ -177,7 +189,7 @@ export default function AppShell({
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 transition={{ duration: 0.15 }}
-                                className="ml-auto"
+                                className="relative z-10 ml-auto"
                               >
                                 <Badge
                                   variant="secondary"
@@ -265,12 +277,7 @@ export function TopBar({
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/40 bg-white/70 px-6 backdrop-blur-md shadow-sm">
-      <div>
-        <h1 className="text-lg font-semibold text-foreground">{title}</h1>
-        {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
-        )}
-      </div>
+      <AnimatedTitle title={title} subtitle={subtitle} />
 
       <div className="flex items-center gap-3">
         {searchSlot}
@@ -286,64 +293,76 @@ export function TopBar({
             <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500 animate-ping opacity-75" />
           </button>
 
-          {showNotifications && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowNotifications(false)}
-              />
-              <div className="absolute right-0 top-full mt-2 z-50 w-80 rounded-xl border border-border/60 bg-white shadow-elevated overflow-hidden">
-                <div className="px-4 py-3 border-b border-border/40 bg-muted/20">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">通知中心</h3>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 font-medium">
-                      5 条未读
-                    </span>
+          <AnimatePresence>
+            {showNotifications && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowNotifications(false)}
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute right-0 top-full mt-2 z-50 w-80 rounded-xl border border-border/60 bg-white shadow-elevated overflow-hidden"
+                >
+                  <div className="px-4 py-3 border-b border-border/40 bg-muted/20">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold">通知中心</h3>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 font-medium">
+                        5 条未读
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {mockNotifications.map((notif, i) => (
-                    <button
-                      key={i}
-                      className="w-full text-left px-4 py-3 hover:bg-muted/30 transition-colors border-b border-border/20 last:border-0"
-                      onClick={() => {
-                        setShowNotifications(false);
-                        onNavigate?.(notif.module);
-                      }}
-                    >
-                      <div className="flex items-start gap-2">
-                        <span
-                          className={cn(
-                            "mt-1.5 h-2 w-2 rounded-full flex-shrink-0",
-                            notif.type === "urgent" && "bg-red-500",
-                            notif.type === "deadline" && "bg-amber-500",
-                            notif.type === "warning" && "bg-orange-500",
-                            notif.type === "info" && "bg-blue-500",
-                          )}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {notif.title}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">
-                            {notif.time}
-                          </p>
+                  <div className="max-h-80 overflow-y-auto">
+                    {mockNotifications.map((notif, i) => (
+                      <button
+                        key={i}
+                        className="w-full text-left px-4 py-3 hover:bg-muted/30 transition-colors border-b border-border/20 last:border-0"
+                        onClick={() => {
+                          setShowNotifications(false);
+                          onNavigate?.(notif.module);
+                        }}
+                      >
+                        <div className="flex items-start gap-2">
+                          <span
+                            className={cn(
+                              "mt-1.5 h-2 w-2 rounded-full flex-shrink-0",
+                              notif.type === "urgent" && "bg-red-500",
+                              notif.type === "deadline" && "bg-amber-500",
+                              notif.type === "warning" && "bg-orange-500",
+                              notif.type === "info" && "bg-blue-500",
+                            )}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">
+                              {notif.title}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                              {notif.time}
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="px-4 py-2.5 border-t border-border/40 bg-muted/20">
+                    <button
+                      className="text-xs text-blue-500 hover:text-blue-600 font-medium"
+                      onClick={() => setShowNotifications(false)}
+                    >
+                      查看全部通知
                     </button>
-                  ))}
-                </div>
-                <div className="px-4 py-2.5 border-t border-border/40 bg-muted/20">
-                  <button
-                    className="text-xs text-blue-500 hover:text-blue-600 font-medium"
-                    onClick={() => setShowNotifications(false)}
-                  >
-                    查看全部通知
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
 
         <button

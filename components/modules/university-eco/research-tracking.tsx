@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Lightbulb, Trophy } from "lucide-react";
+import { BookOpen, Lightbulb, Trophy, Loader2 } from "lucide-react";
 import { MotionNumber } from "@/components/motion";
 import MasterDetailView from "@/components/shared/master-detail-view";
 import DetailArticleBody from "@/components/shared/detail-article-body";
@@ -18,7 +18,8 @@ import { useDetailView } from "@/hooks/use-detail-view";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ResearchOutput } from "@/lib/types/university-eco";
-import { mockResearchOutputs } from "@/lib/mock-data/university-eco";
+import { useUniversityResearch } from "@/hooks/use-university-research";
+import { fetchUniversityArticle } from "@/lib/api";
 
 function TypeBadge({ type }: { type: ResearchOutput["type"] }) {
   const config = {
@@ -62,17 +63,82 @@ export default function ResearchTracking() {
     isOpen,
   } = useDetailView<ResearchOutput>();
 
-  const sortedOutputs = useMemo(
-    () =>
-      [...mockResearchOutputs].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      ),
-    [],
+  const { items, typeStats, isLoading, isUsingMock } = useUniversityResearch();
+
+  const [articleContent, setArticleContent] = useState<{
+    content?: string | null;
+    images?: { src: string; alt: string | null }[];
+  }>({});
+  const [contentLoading, setContentLoading] = useState(false);
+
+  const handleOpen = useCallback(
+    async (output: ResearchOutput) => {
+      open(output);
+      setArticleContent({});
+
+      if (output.content) return;
+
+      setContentLoading(true);
+      try {
+        const detail = await fetchUniversityArticle(output.id);
+        if (detail) {
+          setArticleContent({
+            content: detail.content,
+            images: detail.images,
+          });
+        }
+      } catch {
+        // Silently fail
+      } finally {
+        setContentLoading(false);
+      }
+    },
+    [open],
   );
 
+  // Derive metric values from processed research type stats
+  const metrics = useMemo(() => {
+    if (!typeStats) {
+      return { papers: 32, patents: 8, awards: 3 };
+    }
+    return {
+      papers: typeStats.论文,
+      patents: typeStats.专利,
+      awards: typeStats.获奖,
+    };
+  }, [typeStats]);
+
+  const sortedOutputs = useMemo(
+    () =>
+      [...items].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      ),
+    [items],
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+        加载中…
+      </div>
+    );
+  }
+
   return (
-    <>
-      <div className="grid grid-cols-3 gap-4 mb-4">
+    <div className="flex flex-col" style={{ height: "calc(100vh - 12rem)" }}>
+      {isUsingMock && (
+        <div className="mb-3 shrink-0">
+          <Badge
+            variant="outline"
+            className="text-[11px] text-amber-600 border-amber-300 bg-amber-50"
+          >
+            模拟数据
+          </Badge>
+        </div>
+      )}
+
+      <div className="grid grid-cols-3 gap-4 mb-4 shrink-0">
         <Card className="shadow-card">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-500">
@@ -81,7 +147,7 @@ export default function ResearchTracking() {
             <div>
               <p className="text-[11px] text-muted-foreground">同行论文</p>
               <p className="text-xl font-bold font-tabular">
-                <MotionNumber value={32} suffix="篇" />
+                <MotionNumber value={metrics.papers} suffix="篇" />
               </p>
             </div>
           </CardContent>
@@ -94,7 +160,7 @@ export default function ResearchTracking() {
             <div>
               <p className="text-[11px] text-muted-foreground">新专利</p>
               <p className="text-xl font-bold font-tabular">
-                <MotionNumber value={8} suffix="项" />
+                <MotionNumber value={metrics.patents} suffix="项" />
               </p>
             </div>
           </CardContent>
@@ -107,125 +173,151 @@ export default function ResearchTracking() {
             <div>
               <p className="text-[11px] text-muted-foreground">重大获奖</p>
               <p className="text-xl font-bold font-tabular">
-                <MotionNumber value={3} suffix="项" />
+                <MotionNumber value={metrics.awards} suffix="项" />
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <MasterDetailView
-        isOpen={isOpen}
-        onClose={close}
-        detailHeader={
-          selectedOutput
-            ? {
-                title: (
-                  <h2 className="text-lg font-semibold">
-                    {selectedOutput.title}
-                  </h2>
-                ),
-                subtitle: (
-                  <div className="flex items-center gap-2 flex-wrap mt-1 text-sm text-muted-foreground">
-                    <TypeBadge type={selectedOutput.type} />
-                    <span>{selectedOutput.institution}</span>
-                    <span>&middot;</span>
-                    <span>{selectedOutput.field}</span>
-                    <span>&middot;</span>
-                    <span>{selectedOutput.date}</span>
-                  </div>
-                ),
-              }
-            : undefined
-        }
-        detailContent={
-          selectedOutput && (
-            <DetailArticleBody
-              aiAnalysis={{
-                title: "AI 竞争分析",
-                content: selectedOutput.aiAnalysis,
-                colorScheme: "purple",
-              }}
-              summary={selectedOutput.detail}
-              extraMeta={
-                <div className="space-y-3">
-                  <InfluenceBadge level={selectedOutput.influence} />
-                  <div>
-                    <h4 className="text-sm font-semibold mb-1">作者/团队</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedOutput.authors}
-                    </p>
-                  </div>
-                </div>
-              }
-            />
-          )
-        }
-        detailFooter={
-          selectedOutput && (
-            <div className="flex gap-2">
-              <Button
-                className="flex-1"
-                onClick={() => {
-                  toast.success("已加入重点跟踪列表");
-                  close();
-                }}
-              >
-                重点跟踪
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => toast.success("详细分析报告已生成")}
-              >
-                生成报告
-              </Button>
-            </div>
-          )
-        }
-      >
-        <DateGroupedList
-          items={sortedOutputs}
-          emptyMessage="暂无科研成果"
-          renderItem={(output) => (
-            <DataItemCard
-              isSelected={selectedOutput?.id === output.id}
-              onClick={() => open(output)}
-              accentColor="purple"
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <ItemAvatar text={output.institution.charAt(0)} />
-                  <div>
-                    <h4
-                      className={cn(
-                        "text-sm font-semibold transition-colors",
-                        accentConfig.purple.title,
-                      )}
-                    >
-                      {output.title}
-                    </h4>
-                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
-                      <span>{output.institution}</span>
+      <div className="flex-1 min-h-0">
+        <MasterDetailView
+          isOpen={isOpen}
+          onClose={close}
+          detailHeader={
+            selectedOutput
+              ? {
+                  title: (
+                    <h2 className="text-lg font-semibold">
+                      {selectedOutput.title}
+                    </h2>
+                  ),
+                  subtitle: (
+                    <div className="flex items-center gap-2 flex-wrap mt-1 text-sm text-muted-foreground">
+                      <TypeBadge type={selectedOutput.type} />
+                      <span>{selectedOutput.institution}</span>
                       <span>&middot;</span>
-                      <span>{output.field}</span>
+                      <span>{selectedOutput.field}</span>
+                      <span>&middot;</span>
+                      <span>{selectedOutput.date}</span>
+                    </div>
+                  ),
+                }
+              : undefined
+          }
+          detailContent={
+            selectedOutput && (
+              <>
+                {contentLoading && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>加载原文内容...</span>
+                  </div>
+                )}
+                <DetailArticleBody
+                  aiAnalysis={{
+                    title: "AI 竞争分析",
+                    content: selectedOutput.aiAnalysis,
+                    colorScheme: "purple",
+                  }}
+                  content={
+                    selectedOutput.content ||
+                    articleContent.content ||
+                    undefined
+                  }
+                  summary={
+                    !(selectedOutput.content || articleContent.content)
+                      ? selectedOutput.detail
+                      : undefined
+                  }
+                  images={
+                    selectedOutput.images?.length
+                      ? selectedOutput.images
+                      : articleContent.images
+                  }
+                  extraMeta={
+                    <div className="space-y-3">
+                      <InfluenceBadge level={selectedOutput.influence} />
+                      <div>
+                        <h4 className="text-sm font-semibold mb-1">
+                          作者/团队
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedOutput.authors}
+                        </p>
+                      </div>
+                    </div>
+                  }
+                />
+              </>
+            )
+          }
+          detailFooter={
+            selectedOutput && (
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    toast.success("已加入重点跟踪列表");
+                    close();
+                  }}
+                >
+                  重点跟踪
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => toast.success("详细分析报告已生成")}
+                >
+                  生成报告
+                </Button>
+              </div>
+            )
+          }
+        >
+          <DateGroupedList
+            items={sortedOutputs}
+            emptyMessage="暂无科研成果"
+            renderItem={(output) => (
+              <DataItemCard
+                isSelected={selectedOutput?.id === output.id}
+                onClick={() => handleOpen(output)}
+                accentColor="purple"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <ItemAvatar text={output.institution.charAt(0)} />
+                    <div>
+                      <h4
+                        className={cn(
+                          "text-sm font-semibold transition-colors",
+                          accentConfig.purple.title,
+                        )}
+                      >
+                        {output.title}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
+                        <span>{output.institution}</span>
+                        <span>&middot;</span>
+                        <span>{output.field}</span>
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <InfluenceBadge level={output.influence} />
+                    <ItemChevron accentColor="purple" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <InfluenceBadge level={output.influence} />
-                  <ItemChevron accentColor="purple" />
+                <div className="flex items-center gap-2 ml-[52px]">
+                  <TypeBadge type={output.type} />
+                  <span className="text-xs text-muted-foreground truncate max-w-[500px]">
+                    {output.authors}
+                  </span>
                 </div>
-              </div>
-              <div className="flex items-center gap-2 ml-[52px]">
-                <TypeBadge type={output.type} />
-                <span className="text-xs text-muted-foreground truncate max-w-[500px]">
-                  {output.authors}
-                </span>
-              </div>
-            </DataItemCard>
-          )}
-        />
-      </MasterDetailView>
-    </>
+              </DataItemCard>
+            )}
+          />
+        </MasterDetailView>
+      </div>
+    </div>
   );
 }

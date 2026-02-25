@@ -3,16 +3,42 @@
 import { useState, useEffect } from "react";
 import AppShell, { TopBar } from "@/components/app-shell";
 import FloatingAIAssistant from "@/components/floating-ai-assistant";
-import HomeModule from "@/components/modules/home";
-import PolicyIntelModule from "@/components/modules/policy-intel";
-import TechFrontierModule from "@/components/modules/tech-frontier";
-import TalentRadarModule from "@/components/modules/talent-radar";
-import UniversityEcoModule from "@/components/modules/university-eco";
-import InternalMgmtModule from "@/components/modules/internal-mgmt";
-import NetworkModule from "@/components/modules/network";
-import SmartScheduleModule from "@/components/modules/smart-schedule";
+import dynamic from "next/dynamic";
+
+const HomeModule = dynamic(() => import("@/components/modules/home"), {
+  ssr: false,
+  loading: () => <PageLoadingSkeleton />,
+});
+const PolicyIntelModule = dynamic(
+  () => import("@/components/modules/policy-intel"),
+  { ssr: false, loading: () => <PageLoadingSkeleton /> },
+);
+const TechFrontierModule = dynamic(
+  () => import("@/components/modules/tech-frontier"),
+  { ssr: false, loading: () => <PageLoadingSkeleton /> },
+);
+const TalentRadarModule = dynamic(
+  () => import("@/components/modules/talent-radar"),
+  { ssr: false, loading: () => <PageLoadingSkeleton /> },
+);
+const UniversityEcoModule = dynamic(
+  () => import("@/components/modules/university-eco"),
+  { ssr: false, loading: () => <PageLoadingSkeleton /> },
+);
+const InternalMgmtModule = dynamic(
+  () => import("@/components/modules/internal-mgmt"),
+  { ssr: false, loading: () => <PageLoadingSkeleton /> },
+);
+const NetworkModule = dynamic(() => import("@/components/modules/network"), {
+  ssr: false,
+  loading: () => <PageLoadingSkeleton />,
+});
+const SmartScheduleModule = dynamic(
+  () => import("@/components/modules/smart-schedule"),
+  { ssr: false, loading: () => <PageLoadingSkeleton /> },
+);
 import CommandPalette from "@/components/shared/command-palette";
-import { MotionPage } from "@/components/motion";
+import { MotionPage, PageLoadingSkeleton } from "@/components/motion";
 import { Toaster } from "sonner";
 import { pageMeta } from "@/lib/mock-data/navigation";
 

@@ -36,12 +36,7 @@ export default function DateGroupedList<
   }
 
   return (
-    <div
-      className={cn(
-        "space-y-4 max-h-[calc(100vh-320px)] overflow-y-auto",
-        className,
-      )}
-    >
+    <div className={cn("space-y-4", className)}>
       {groups.map((group) => (
         <Card key={group.label} className="shadow-card">
           <CardHeader className="pb-3">

@@ -89,6 +89,11 @@ export interface AiAnalysisConfig {
   collapsible?: boolean;
 }
 
+export interface ImageItem {
+  src: string;
+  alt: string | null;
+}
+
 export interface DetailArticleBodyProps {
   /** AI analysis section — rendered first */
   aiAnalysis?: AiAnalysisConfig;
@@ -98,6 +103,8 @@ export interface DetailArticleBodyProps {
   summary?: string;
   /** Tags rendered as small badges */
   tags?: string[];
+  /** Article images */
+  images?: ImageItem[];
   /** Extra meta badges/info rendered above AI analysis */
   extraMeta?: ReactNode;
   /** Additional content rendered between AI analysis and article text */
@@ -113,6 +120,7 @@ export default function DetailArticleBody({
   content,
   summary,
   tags,
+  images,
   extraMeta,
   children,
 }: DetailArticleBodyProps) {
@@ -167,17 +175,15 @@ export default function DetailArticleBody({
               <p className={cn("text-sm leading-relaxed", scheme.text)}>
                 {aiAnalysis.content}
               </p>
-              {aiAnalysis.detail && aiAnalysis.detail !== aiAnalysis.content && (
-                <p className={cn("text-xs leading-relaxed", scheme.textAlt)}>
-                  {aiAnalysis.detail}
-                </p>
-              )}
+              {aiAnalysis.detail &&
+                aiAnalysis.detail !== aiAnalysis.content && (
+                  <p className={cn("text-xs leading-relaxed", scheme.textAlt)}>
+                    {aiAnalysis.detail}
+                  </p>
+                )}
               {aiAnalysis.signals && aiAnalysis.signals.length > 0 && (
                 <div
-                  className={cn(
-                    "space-y-1 pt-1 border-t",
-                    scheme.signalBorder,
-                  )}
+                  className={cn("space-y-1 pt-1 border-t", scheme.signalBorder)}
                 >
                   <span
                     className={cn(
@@ -221,6 +227,28 @@ export default function DetailArticleBody({
             <Badge key={tag} variant="secondary" className="text-[10px]">
               {tag}
             </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Article images */}
+      {images && images.length > 0 && (
+        <div className="space-y-3">
+          {images.map((img, idx) => (
+            <figure key={idx} className="overflow-hidden rounded-lg border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={img.src}
+                alt={img.alt || ""}
+                className="w-full h-auto object-cover"
+                loading="lazy"
+              />
+              {img.alt && (
+                <figcaption className="px-3 py-1.5 text-xs text-muted-foreground bg-muted/30">
+                  {img.alt}
+                </figcaption>
+              )}
+            </figure>
           ))}
         </div>
       )}

@@ -6,17 +6,16 @@ import TodayAgenda from "@/components/home/today-agenda";
 import { MotionCard } from "@/components/motion";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import {
-  mockDailySummary,
-  mockMetricCards,
-  mockAgendaItems,
-} from "@/lib/mock-data/home-briefing";
+import { mockAgendaItems } from "@/lib/mock-data/home-briefing";
+import { useDailyBriefing } from "@/hooks/use-daily-briefing";
 
 export default function HomeBriefingPage({
   onNavigate,
 }: {
   onNavigate?: (page: string) => void;
 }) {
+  const { dailySummary, metricCards, isLoading } = useDailyBriefing();
+
   return (
     <div className="p-5 space-y-3">
       {/* Header + AI Briefing merged for compactness */}
@@ -40,7 +39,15 @@ export default function HomeBriefingPage({
             {mockAgendaItems.length} 项待处理
           </Badge>
         </div>
-        <AIDailySummary data={mockDailySummary} onNavigate={onNavigate} />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <span className="text-xs text-muted-foreground animate-pulse">
+              AI 早报生成中...
+            </span>
+          </div>
+        ) : (
+          <AIDailySummary data={dailySummary} onNavigate={onNavigate} />
+        )}
       </MotionCard>
 
       {/* Today Agenda — merged schedule + pending actions */}
@@ -54,7 +61,7 @@ export default function HomeBriefingPage({
       {/* Module Overview Cards — clickable navigation */}
       <MotionCard delay={0.2}>
         <AggregatedMetricCards
-          cards={mockMetricCards}
+          cards={metricCards}
           onCardClick={(cardId) => onNavigate?.(cardId)}
           columns={4}
         />

@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card";
+import { ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -11,7 +16,14 @@ import { cn } from "@/lib/utils";
  */
 export type BriefingSegment =
   | string
-  | { text: string; moduleId: string; action?: string };
+  | {
+      text: string;
+      moduleId: string;
+      action?: string;
+      url?: string;
+      contentSnippet?: string;
+      sourceName?: string;
+    };
 
 export interface DailySummaryData {
   /** Array of paragraphs; each paragraph is an array of segments */
@@ -25,6 +37,80 @@ export interface DailySummaryData {
 interface AIDailySummaryProps {
   data: DailySummaryData;
   onNavigate?: (moduleId: string) => void;
+}
+
+function SegmentLink({
+  seg,
+  onNavigate,
+}: {
+  seg: Exclude<BriefingSegment, string>;
+  onNavigate?: (moduleId: string) => void;
+}) {
+  const hasUrl = !!seg.url;
+  const isClickable = hasUrl || (!!seg.moduleId && !!onNavigate);
+
+  const handleClick = () => {
+    if (hasUrl) {
+      window.open(seg.url, "_blank", "noopener,noreferrer");
+    } else if (onNavigate) {
+      onNavigate(seg.moduleId);
+    }
+  };
+
+  const linkButton = (
+    <button
+      type="button"
+      disabled={!isClickable}
+      className={cn(
+        "inline font-medium transition-colors",
+        hasUrl
+          ? "text-blue-600 underline decoration-blue-300 decoration-1 underline-offset-2 hover:decoration-blue-500 hover:text-blue-700 cursor-pointer"
+          : isClickable
+            ? "text-foreground underline decoration-blue-200 decoration-1 underline-offset-2 hover:decoration-blue-400 hover:text-blue-600 cursor-pointer"
+            : "text-foreground",
+      )}
+      onClick={handleClick}
+    >
+      {seg.text}
+      {hasUrl && (
+        <ExternalLink className="inline-block h-3 w-3 ml-0.5 -mt-0.5 opacity-50" />
+      )}
+    </button>
+  );
+
+  // Wrap in HoverCard if we have content to show
+  if (seg.contentSnippet || seg.sourceName) {
+    return (
+      <HoverCard openDelay={300} closeDelay={100}>
+        <HoverCardTrigger asChild>{linkButton}</HoverCardTrigger>
+        <HoverCardContent className="w-80 p-3" side="top">
+          <div className="space-y-1.5">
+            <p className="text-sm font-semibold leading-snug text-foreground">
+              {seg.text}
+            </p>
+            {seg.sourceName && (
+              <p className="text-[11px] text-muted-foreground">
+                来源: {seg.sourceName}
+              </p>
+            )}
+            {seg.contentSnippet && (
+              <p className="text-xs leading-relaxed text-muted-foreground line-clamp-5">
+                {seg.contentSnippet}
+              </p>
+            )}
+            {seg.url && (
+              <p className="flex items-center gap-1 text-[10px] text-blue-500 pt-0.5">
+                <ExternalLink className="h-2.5 w-2.5" />
+                点击查看原文
+              </p>
+            )}
+          </div>
+        </HoverCardContent>
+      </HoverCard>
+    );
+  }
+
+  return linkButton;
 }
 
 export default function AIDailySummary({
@@ -63,31 +149,8 @@ export default function AIDailySummary({
                 if (typeof seg === "string") {
                   return <span key={sIdx}>{seg}</span>;
                 }
-                const isClickable = !!seg.moduleId && !!onNavigate;
                 return (
-                  <span key={sIdx} className="inline">
-                    <button
-                      type="button"
-                      disabled={!isClickable}
-                      className={cn(
-                        "inline text-foreground font-medium",
-                        isClickable &&
-                          "underline decoration-blue-300 decoration-1 underline-offset-2 hover:decoration-blue-500 hover:text-blue-700 transition-colors cursor-pointer",
-                      )}
-                      onClick={() => isClickable && onNavigate!(seg.moduleId)}
-                    >
-                      {seg.text}
-                    </button>
-                    {seg.action && isClickable && (
-                      <button
-                        type="button"
-                        className="inline-flex items-center ml-1 px-1.5 py-0 rounded text-[10px] font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200/60 transition-colors cursor-pointer align-baseline"
-                        onClick={() => onNavigate!(seg.moduleId)}
-                      >
-                        {seg.action}
-                      </button>
-                    )}
-                  </span>
+                  <SegmentLink key={sIdx} seg={seg} onNavigate={onNavigate} />
                 );
               })}
             </p>

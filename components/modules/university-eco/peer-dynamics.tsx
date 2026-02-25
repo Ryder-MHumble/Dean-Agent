@@ -1,9 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, FlaskConical } from "lucide-react";
+import {
+  Building2,
+  FlaskConical,
+  Landmark,
+  Award,
+  Newspaper,
+  Loader2,
+} from "lucide-react";
 import MasterDetailView from "@/components/shared/master-detail-view";
 import DetailArticleBody from "@/components/shared/detail-article-body";
 import DateGroupedList from "@/components/shared/date-grouped-list";
@@ -13,10 +20,11 @@ import DataItemCard, {
 } from "@/components/shared/data-item-card";
 import DataFreshness from "@/components/shared/data-freshness";
 import { useDetailView } from "@/hooks/use-detail-view";
+import { useUniversityFeed } from "@/hooks/use-university-feed";
+import { fetchUniversityArticle } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { PeerNewsItem, PeerNewsGroup } from "@/lib/types/university-eco";
-import { mockPeerNews } from "@/lib/mock-data/university-eco";
 
 type FilterTag = "all" | PeerNewsGroup;
 
@@ -29,6 +37,18 @@ const GROUP_CONFIG: Record<PeerNewsGroup, { label: string; color: string }> = {
     label: "研究机构",
     color: "bg-violet-100 text-violet-700 border-violet-200",
   },
+  provincial: {
+    label: "教育厅",
+    color: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  },
+  awards: {
+    label: "科技荣誉",
+    color: "bg-amber-100 text-amber-700 border-amber-200",
+  },
+  aggregators: {
+    label: "教育聚合",
+    color: "bg-rose-100 text-rose-700 border-rose-200",
+  },
 };
 
 const FILTER_TABS: {
@@ -39,10 +59,14 @@ const FILTER_TABS: {
   { value: "all", label: "全部" },
   { value: "university_news", label: "高校动态", icon: Building2 },
   { value: "ai_institutes", label: "研究机构", icon: FlaskConical },
+  { value: "provincial", label: "教育厅", icon: Landmark },
+  { value: "awards", label: "科技荣誉", icon: Award },
+  { value: "aggregators", label: "教育聚合", icon: Newspaper },
 ];
 
 function GroupBadge({ group }: { group: PeerNewsGroup }) {
   const c = GROUP_CONFIG[group];
+  if (!c) return null;
   return (
     <Badge variant="outline" className={cn("text-[11px] font-medium", c.color)}>
       {c.label}
@@ -59,146 +83,246 @@ export default function PeerDynamics() {
   } = useDetailView<PeerNewsItem>();
   const [activeFilter, setActiveFilter] = useState<FilterTag>("all");
 
+  const { items, isLoading, isUsingMock, generatedAt } = useUniversityFeed();
+
+  const [articleContent, setArticleContent] = useState<{
+    content?: string | null;
+    images?: { src: string; alt: string | null }[];
+  }>({});
+  const [contentLoading, setContentLoading] = useState(false);
+
+  const handleOpen = useCallback(
+    async (news: PeerNewsItem) => {
+      open(news);
+      setArticleContent({});
+
+      // If content is already available from the feed, no need to fetch
+      if (news.content) return;
+
+      // Try to fetch full article content
+      if (news.url) {
+        setContentLoading(true);
+        try {
+          const detail = await fetchUniversityArticle(news.id);
+          if (detail) {
+            setArticleContent({
+              content: detail.content,
+              images: detail.images,
+            });
+          }
+        } catch {
+          // Silently fail - detail view will show fallback
+        } finally {
+          setContentLoading(false);
+        }
+      }
+    },
+    [open],
+  );
+
   const filteredNews = useMemo(() => {
-    const sorted = [...mockPeerNews].sort(
+    const sorted = [...items].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
     if (activeFilter === "all") return sorted;
     return sorted.filter((n) => n.group === activeFilter);
-  }, [activeFilter]);
+  }, [items, activeFilter]);
+
+  const groupCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: items.length };
+    for (const item of items) {
+      counts[item.group] = (counts[item.group] || 0) + 1;
+    }
+    return counts;
+  }, [items]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-muted-foreground gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span className="text-sm">加载高校动态数据...</span>
+      </div>
+    );
+  }
 
   return (
-    <>
+    <div className="flex flex-col" style={{ height: "calc(100vh - 10rem)" }}>
       {/* Sticky filter bar */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pb-3 mb-1">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pb-3 mb-1 shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            {FILTER_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => setActiveFilter(tab.value)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-                  activeFilter === tab.value
-                    ? "bg-foreground text-background shadow-sm"
-                    : "bg-muted/60 text-muted-foreground hover:bg-muted",
-                )}
-              >
-                {tab.icon && <tab.icon className="h-3 w-3" />}
-                {tab.label}
-                <span className="ml-0.5 text-[10px] opacity-70">
-                  {tab.value === "all"
-                    ? mockPeerNews.length
-                    : mockPeerNews.filter((n) => n.group === tab.value).length}
-                </span>
-              </button>
-            ))}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {FILTER_TABS.map((tab) => {
+              const count = groupCounts[tab.value] ?? 0;
+              if (tab.value !== "all" && count === 0) return null;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() =>
+                    setActiveFilter((prev) =>
+                      prev === tab.value && tab.value !== "all"
+                        ? "all"
+                        : tab.value,
+                    )
+                  }
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                    activeFilter === tab.value
+                      ? "bg-blue-100 text-blue-700 shadow-sm"
+                      : "bg-muted/60 text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  {tab.icon && <tab.icon className="h-3 w-3" />}
+                  {tab.label}
+                  <span className="ml-0.5 text-[10px] opacity-70">{count}</span>
+                </button>
+              );
+            })}
           </div>
-          <DataFreshness updatedAt={new Date()} />
+          <div className="flex items-center gap-2">
+            {isUsingMock && (
+              <Badge
+                variant="outline"
+                className="text-[10px] text-amber-600 border-amber-200"
+              >
+                模拟数据
+              </Badge>
+            )}
+            <DataFreshness
+              updatedAt={generatedAt ? new Date(generatedAt) : new Date()}
+            />
+          </div>
         </div>
       </div>
 
-      <MasterDetailView
-        isOpen={isOpen}
-        onClose={close}
-        detailHeader={
-          selectedNews
-            ? {
-                title: (
-                  <h2 className="text-lg font-semibold leading-snug">
-                    {selectedNews.title}
-                  </h2>
-                ),
-                subtitle: (
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <GroupBadge group={selectedNews.group} />
-                    <span className="text-sm text-muted-foreground">
-                      {selectedNews.sourceName}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {selectedNews.date}
+      <div className="flex-1 min-h-0">
+        <MasterDetailView
+          isOpen={isOpen}
+          onClose={close}
+          detailHeader={
+            selectedNews
+              ? {
+                  title: (
+                    <h2 className="text-lg font-semibold leading-snug">
+                      {selectedNews.title}
+                    </h2>
+                  ),
+                  subtitle: (
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <GroupBadge group={selectedNews.group} />
+                      <span className="text-sm text-muted-foreground">
+                        {selectedNews.sourceName}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {selectedNews.date}
+                      </span>
+                    </div>
+                  ),
+                  sourceUrl: selectedNews.url,
+                }
+              : undefined
+          }
+          detailContent={
+            selectedNews && (
+              <>
+                {contentLoading && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>加载原文内容...</span>
+                  </div>
+                )}
+                <DetailArticleBody
+                  aiAnalysis={
+                    selectedNews.summary
+                      ? {
+                          title: "AI 摘要分析",
+                          content: selectedNews.summary,
+                          colorScheme: "indigo",
+                        }
+                      : undefined
+                  }
+                  content={
+                    selectedNews.content || articleContent.content || undefined
+                  }
+                  summary={
+                    !(selectedNews.content || articleContent.content)
+                      ? selectedNews.title
+                      : undefined
+                  }
+                  images={
+                    selectedNews.images?.length
+                      ? selectedNews.images
+                      : articleContent.images
+                  }
+                  tags={selectedNews.tags}
+                />
+              </>
+            )
+          }
+          detailFooter={
+            selectedNews && (
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    toast.success("已加入重点跟踪");
+                    close();
+                  }}
+                >
+                  重点跟踪
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => toast.success("详细分析报告已生成")}
+                >
+                  生成报告
+                </Button>
+              </div>
+            )
+          }
+        >
+          <DateGroupedList
+            key={activeFilter}
+            items={filteredNews}
+            emptyMessage="暂无同行动态"
+            renderItem={(news) => (
+              <DataItemCard
+                isSelected={selectedNews?.id === news.id}
+                onClick={() => handleOpen(news)}
+                accentColor="blue"
+              >
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <h4
+                    className={cn(
+                      "text-sm font-semibold leading-snug flex-1 transition-colors",
+                      accentConfig.blue.title,
+                    )}
+                  >
+                    {news.title}
+                  </h4>
+                  <ItemChevron accentColor="blue" />
+                </div>
+                {news.summary && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">
+                    {news.summary}
+                  </p>
+                )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <GroupBadge group={news.group} />
+                    <span className="text-[11px] text-muted-foreground">
+                      {news.sourceName}
                     </span>
                   </div>
-                ),
-                sourceUrl: selectedNews.url,
-              }
-            : undefined
-        }
-        detailContent={
-          selectedNews && (
-            <DetailArticleBody
-              aiAnalysis={{
-                title: "AI 摘要分析",
-                content: `该动态来源于${selectedNews.sourceName}，与我院研究方向存在潜在关联。建议关注后续进展并评估合作可能性。`,
-                colorScheme: "indigo",
-              }}
-              summary={selectedNews.summary}
-              tags={selectedNews.tags}
-            />
-          )
-        }
-        detailFooter={
-          selectedNews && (
-            <div className="flex gap-2">
-              <Button
-                className="flex-1"
-                onClick={() => {
-                  toast.success("已加入重点跟踪");
-                  close();
-                }}
-              >
-                重点跟踪
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => toast.success("详细分析报告已生成")}
-              >
-                生成报告
-              </Button>
-            </div>
-          )
-        }
-      >
-        <DateGroupedList
-          items={filteredNews}
-          className="max-h-[calc(100vh-280px)]"
-          emptyMessage="暂无同行动态"
-          renderItem={(news) => (
-            <DataItemCard
-              isSelected={selectedNews?.id === news.id}
-              onClick={() => open(news)}
-              accentColor="blue"
-            >
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <h4
-                  className={cn(
-                    "text-sm font-semibold leading-snug flex-1 transition-colors",
-                    accentConfig.blue.title,
-                  )}
-                >
-                  {news.title}
-                </h4>
-                <ItemChevron accentColor="blue" />
-              </div>
-              <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">
-                {news.summary}
-              </p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <GroupBadge group={news.group} />
                   <span className="text-[11px] text-muted-foreground">
-                    {news.sourceName}
+                    {news.date}
                   </span>
                 </div>
-                <span className="text-[11px] text-muted-foreground">
-                  {news.date}
-                </span>
-              </div>
-            </DataItemCard>
-          )}
-        />
-      </MasterDetailView>
-    </>
+              </DataItemCard>
+            )}
+          />
+        </MasterDetailView>
+      </div>
+    </div>
   );
 }

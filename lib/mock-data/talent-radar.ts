@@ -106,6 +106,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "重要",
     date: "2026-02-14",
     source: "新华社",
+    sourceUrl: "https://www.xinhuanet.com/politics/2026-02/14/c_1130029456.htm",
     people: ["吴岩"],
     organizations: ["教育部", "科技部"],
     personProfile: {
@@ -130,6 +131,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "重要",
     date: "2026-02-14",
     source: "清华新闻网",
+    sourceUrl: "https://news.tsinghua.edu.cn/info/1003/112358.htm",
     people: ["张亚勤"],
     organizations: ["清华大学", "清华大学人工智能研究院"],
     personProfile: {
@@ -154,6 +156,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "重要",
     date: "2026-02-14",
     source: "北京大学新闻网",
+    sourceUrl: "https://news.pku.edu.cn/jxw/2026-02/14/content_418265.htm",
     people: ["陈明宇"],
     organizations: ["MIT", "北京大学"],
     personProfile: {
@@ -180,6 +183,8 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "关注",
     date: "2026-02-12",
     source: "北京日报",
+    sourceUrl:
+      "https://www.bjd.com.cn/a/202602/12/WS65ca3f4be4b0a8f6d8b92451.html",
     people: ["许强"],
     organizations: ["北京市科委", "北京市发改委"],
     personProfile: {
@@ -202,6 +207,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "关注",
     date: "2026-02-11",
     source: "ACM官网",
+    sourceUrl: "https://www.acm.org/media-center/2025/february/fellows-2025",
     people: ["田永鸿", "卢策吾", "贾佳亚"],
     organizations: ["北京大学", "上海交通大学", "香港中文大学", "ACM"],
     relevanceNote:
@@ -216,6 +222,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "关注",
     date: "2026-02-11",
     source: "中国科学院官网",
+    sourceUrl: "https://www.cas.cn/yw/202602/t20260211_4974562.shtml",
     people: ["吴朝晖"],
     organizations: ["浙江大学", "中国科学院"],
     personProfile: {
@@ -239,6 +246,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "关注",
     date: "2026-02-10",
     source: "上海交通大学新闻网",
+    sourceUrl: "https://news.sjtu.edu.cn/jdyw/20260210/176531.html",
     people: ["卢策吾"],
     organizations: ["上海交通大学", "上海交通大学人工智能学院"],
     personProfile: {
@@ -259,6 +267,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "重要",
     date: "2026-02-10",
     source: "基金委官网",
+    sourceUrl: "https://www.nsfc.gov.cn/publish/portal0/tab434/info91528.htm",
     people: ["郝占军", "张兆田"],
     organizations: ["国家自然科学基金委"],
     personProfile: {
@@ -283,6 +292,8 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "重要",
     date: "2026-02-06",
     source: "科技部官网",
+    sourceUrl:
+      "https://www.most.gov.cn/xxgk/xinxifenlei/fdzdgknr/qtwj/202602/t20260206_192845.htm",
     people: ["张广军"],
     organizations: ["科技部"],
     relevanceNote:
@@ -297,6 +308,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "关注",
     date: "2026-02-05",
     source: "中科院自动化所官网",
+    sourceUrl: "http://www.ia.cas.cn/xwzx/kydt/202602/t20260205_7216358.html",
     people: ["王浩然"],
     organizations: ["Google DeepMind", "中科院自动化所"],
     personProfile: {
@@ -321,6 +333,8 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "重要",
     date: "2026-02-03",
     source: "中国工程院官网",
+    sourceUrl:
+      "https://www.cae.cn/cae/html/main/col48/2026-02/03/20260203182845361.html",
     people: ["孙茂松", "田奇"],
     organizations: ["中国工程院", "清华大学", "华为"],
     relevanceNote:
@@ -335,6 +349,8 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "一般",
     date: "2026-02-01",
     source: "北京大学新闻网",
+    sourceUrl:
+      "https://news.pku.edu.cn/xwzh/8f2f6c2a12cf4a5f8d1e9b3a7c4f8e5d.htm",
     people: ["孙庆伟", "张平文"],
     organizations: ["北京大学"],
   },
@@ -347,6 +363,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "关注",
     date: "2026-01-28",
     source: "CSRankings",
+    sourceUrl: "https://csrankings.org/#/index?ai&world",
     people: [],
     organizations: ["清华大学", "北京大学", "上海交通大学"],
     relevanceNote:
@@ -361,6 +378,8 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "关注",
     date: "2026-01-25",
     source: "国家发改委官网",
+    sourceUrl:
+      "https://www.ndrc.gov.cn/fggz/zlzx/202601/t20260125_1386452.html",
     people: ["孙立明"],
     organizations: ["国家发改委", "中关村管委会"],
     relevanceNote:
@@ -375,6 +394,7 @@ export const mockPersonnelNews: PersonnelNewsItem[] = [
     importance: "关注",
     date: "2026-01-20",
     source: "Stanford HAI",
+    sourceUrl: "https://aiindex.stanford.edu/report/",
     people: [],
     organizations: ["Stanford HAI"],
     relevanceNote:

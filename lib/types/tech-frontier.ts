@@ -79,3 +79,40 @@ export interface Opportunity {
   aiAssessment: string;
   actionSuggestion: string;
 }
+
+// Discriminated union for the unified detail view
+export type DetailTarget =
+  | { kind: "topic"; data: TechTopic }
+  | { kind: "news"; data: TopicNews; parentTopic?: TechTopic }
+  | { kind: "kol"; data: KOLVoice; parentTopic?: TechTopic }
+  | { kind: "opportunity"; data: Opportunity };
+
+// Flattened signal item for the signal feed
+export interface IndustrySignalItem {
+  kind: "news" | "kol";
+  data: TopicNews | KOLVoice;
+  parentTopicId: string;
+  parentTopicName: string;
+  date: string;
+}
+
+// AI briefing data structure
+export interface TechBriefing {
+  narrative: string;
+  highlights: {
+    label: string;
+    topicId?: string;
+    color: "red" | "amber" | "blue" | "purple";
+  }[];
+  generatedAt: Date;
+}
+
+// KPI data for the metric strip
+export interface TechFrontierKPIs {
+  totalTopics: number;
+  surgingCount: number;
+  highGapCount: number;
+  weeklyNewSignals: number;
+  urgentOpportunities: number;
+  totalOpportunities: number;
+}

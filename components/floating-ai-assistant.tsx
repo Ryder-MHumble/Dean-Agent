@@ -1,14 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Bot,
   X,
   Minus,
-  Send,
-  User,
   Sparkles,
   Calendar,
   FileText,
@@ -16,10 +13,12 @@ import {
   Users,
   BarChart3,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ArrowUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "@/components/motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import type { ChatMessage } from "@/lib/types/ai-assistant";
 import {
@@ -37,21 +36,21 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 // ==================
-// Typing Indicator
+// Typing Indicator — Gemini-style
 // ==================
 function TypingIndicator() {
   return (
-    <div className="flex items-end gap-2.5 mb-4">
-      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
-        <Bot className="h-4 w-4 text-white" />
+    <div className="flex gap-3 mb-5">
+      <div className="flex-shrink-0 h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mt-0.5">
+        <Bot className="h-3.5 w-3.5 text-white" />
       </div>
-      <div className="bg-muted/60 backdrop-blur-sm rounded-2xl rounded-bl-md px-4 py-3 border border-border/40">
+      <div className="pt-1.5">
         <div className="flex items-center gap-1.5">
           {[0, 1, 2].map((i) => (
             <motion.span
               key={i}
-              className="h-1.5 w-1.5 bg-blue-500/60 rounded-full"
-              animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
+              className="h-1.5 w-1.5 bg-blue-400 rounded-full"
+              animate={{ y: [0, -5, 0], opacity: [0.3, 1, 0.3] }}
               transition={{
                 duration: 0.8,
                 repeat: Infinity,
@@ -67,7 +66,7 @@ function TypingIndicator() {
 }
 
 // ==================
-// Message Bubble
+// Message Bubble — Gemini-style
 // ==================
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
@@ -76,54 +75,141 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     minute: "2-digit",
   });
 
+  if (isUser) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="flex justify-end mb-5"
+      >
+        <div className="max-w-[82%]">
+          <div className="bg-blue-600 text-white px-4 py-2.5 rounded-2xl rounded-br-md text-[13px] leading-relaxed whitespace-pre-line">
+            {message.content}
+          </div>
+          <div className="text-[10px] text-muted-foreground/50 mt-1 text-right pr-1">
+            {timeStr}
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // AI message: avatar top-left, content flows beside it
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={cn(
-        "flex items-end gap-2.5 mb-3",
-        isUser ? "flex-row-reverse" : "flex-row",
-      )}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="flex gap-3 mb-5"
     >
-      {/* Avatar */}
-      {isUser ? (
-        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-md shadow-blue-600/20">
-          <User className="h-3.5 w-3.5 text-white" />
-        </div>
-      ) : (
-        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
-          <Bot className="h-3.5 w-3.5 text-white" />
-        </div>
-      )}
-
-      {/* Bubble */}
-      <div
-        className={cn(
-          "max-w-[78%] flex flex-col",
-          isUser ? "items-end" : "items-start",
-        )}
-      >
-        <div
-          className={cn(
-            "px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-line",
-            isUser
-              ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-2xl rounded-br-md shadow-md shadow-blue-600/10"
-              : "bg-muted/60 backdrop-blur-sm text-foreground rounded-2xl rounded-bl-md border border-border/40",
-          )}
-        >
+      <div className="flex-shrink-0 h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mt-0.5">
+        <Bot className="h-3.5 w-3.5 text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] leading-relaxed text-foreground whitespace-pre-line">
           {message.content}
         </div>
-        <span
-          className={cn(
-            "text-[10px] text-muted-foreground/60 mt-1 px-1",
-            isUser ? "mr-1" : "ml-1",
-          )}
-        >
+        <div className="text-[10px] text-muted-foreground/50 mt-1.5">
           {timeStr}
-        </span>
+        </div>
       </div>
     </motion.div>
+  );
+}
+
+// ==================
+// Quick Actions with Arrow Navigation
+// ==================
+function QuickActionBar({ onAction }: { onAction: (label: string) => void }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    const ro = new ResizeObserver(checkScroll);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      ro.disconnect();
+    };
+  }, [checkScroll]);
+
+  const scroll = (direction: "left" | "right") => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.scrollBy({
+      left: direction === "left" ? -140 : 140,
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <div className="relative flex items-center gap-1.5">
+      {/* Left arrow */}
+      <AnimatePresence>
+        {canScrollLeft && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
+            onClick={() => scroll("left")}
+            className="flex-shrink-0 h-7 w-7 rounded-full border border-border/60 bg-background hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shadow-sm"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Scrollable chips (hidden scrollbar) */}
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 flex gap-1.5 overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {quickActions.map((action) => {
+          const Icon = ICON_MAP[action.icon];
+          return (
+            <button
+              key={action.label}
+              onClick={() => onAction(action.label)}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/60 rounded-full transition-all duration-150 hover:shadow-sm active:scale-[0.97] select-none"
+            >
+              {Icon && <Icon className="h-3 w-3 opacity-70" />}
+              {action.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Right arrow */}
+      <AnimatePresence>
+        {canScrollRight && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
+            onClick={() => scroll("right")}
+            className="flex-shrink-0 h-7 w-7 rounded-full border border-border/60 bg-background hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shadow-sm"
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -170,7 +256,8 @@ export default function FloatingAIAssistant() {
     const viewport = getViewport();
     if (!viewport) return;
     const handleScroll = () => {
-      const gap = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+      const gap =
+        viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
       setShowScrollBtn(gap > 80);
     };
     viewport.addEventListener("scroll", handleScroll, { passive: true });
@@ -238,7 +325,6 @@ export default function FloatingAIAssistant() {
             }}
             className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-shadow duration-300 flex items-center justify-center group"
           >
-            {/* Pulse ring */}
             <span className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping pointer-events-none" />
             <span className="absolute inset-[-3px] rounded-full border-2 border-blue-400/30 animate-pulse-subtle pointer-events-none" />
             <Sparkles className="h-6 w-6 transition-transform group-hover:scale-110 group-hover:rotate-12" />
@@ -268,7 +354,6 @@ export default function FloatingAIAssistant() {
           >
             {/* Header */}
             <div className="relative flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white overflow-hidden">
-              {/* Decorative circles */}
               <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-white/5" />
               <div className="absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-white/5" />
 
@@ -282,7 +367,9 @@ export default function FloatingAIAssistant() {
                   </h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-soft" />
-                    <p className="text-[11px] text-white/70">在线 · 随时为您服务</p>
+                    <p className="text-[11px] text-white/70">
+                      在线 · 随时为您服务
+                    </p>
                   </div>
                 </div>
               </div>
@@ -325,12 +412,9 @@ export default function FloatingAIAssistant() {
                     {/* Chat messages area */}
                     <div className="relative flex-1 min-h-0">
                       <ScrollArea ref={scrollRef} className="h-full">
-                        <div className="px-4 pt-4 pb-2">
+                        <div className="px-5 pt-5 pb-2">
                           {messages.map((message) => (
-                            <MessageBubble
-                              key={message.id}
-                              message={message}
-                            />
+                            <MessageBubble key={message.id} message={message} />
                           ))}
                           {isTyping && <TypingIndicator />}
                         </div>
@@ -352,23 +436,9 @@ export default function FloatingAIAssistant() {
                       </AnimatePresence>
                     </div>
 
-                    {/* Quick action chips */}
-                    <div className="px-4 py-2.5 border-t border-border/40">
-                      <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
-                        {quickActions.map((action) => {
-                          const Icon = ICON_MAP[action.icon];
-                          return (
-                            <button
-                              key={action.label}
-                              onClick={() => handleQuickAction(action.label)}
-                              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/60 rounded-full transition-all duration-200 hover:shadow-sm active:scale-[0.97] select-none"
-                            >
-                              {Icon && <Icon className="h-3 w-3 opacity-70" />}
-                              {action.label}
-                            </button>
-                          );
-                        })}
-                      </div>
+                    {/* Quick action chips with arrow navigation */}
+                    <div className="px-3 py-2.5 border-t border-border/40">
+                      <QuickActionBar onAction={handleQuickAction} />
                     </div>
 
                     {/* Input area */}
