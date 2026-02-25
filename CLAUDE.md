@@ -4,6 +4,21 @@
 
 这是一个基于 Next.js 16 的院长智能体管理系统，使用 TypeScript、Tailwind CSS 和 shadcn/ui 组件库。
 
+## 部署环境
+
+| 服务 | 地址 |
+|------|------|
+| 前端 | http://43.98.254.243:8080/ |
+| 后端 API | http://43.98.254.243:8001/ |
+| API 文档 | http://43.98.254.243:8001/docs |
+
+服务器项目路径：
+
+- 前端：`/home/ecs-user/Dean-Agent-Project/Dean-Agent-Fronted`
+- 后端：`/home/ecs-user/Dean-Agent-Project/DeanAgent-Backend`
+
+后端项目（Information Crawler）位于本地 `/Users/sunminghao/Desktop/Information_Crawler`，服务器 `/home/ecs-user/Dean-Agent-Project/DeanAgent-Backend`，提供 27 个 REST API 端点（含 13 个业务智能端点）。
+
 ## 技术栈
 
 - **框架**: Next.js 16.1.6 (Turbopack)

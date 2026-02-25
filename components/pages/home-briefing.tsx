@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { mockAgendaItems } from "@/lib/mock-data/home-briefing";
 import { useDailyBriefing } from "@/hooks/use-daily-briefing";
+import { SkeletonHomeBriefing } from "@/components/shared/skeleton-states";
 
 export default function HomeBriefingPage({
   onNavigate,
@@ -40,11 +41,7 @@ export default function HomeBriefingPage({
           </Badge>
         </div>
         {isLoading ? (
-          <div className="flex items-center justify-center py-6">
-            <span className="text-xs text-muted-foreground animate-pulse">
-              AI 早报生成中...
-            </span>
-          </div>
+          <SkeletonHomeBriefing />
         ) : (
           <AIDailySummary data={dailySummary} onNavigate={onNavigate} />
         )}

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Lightbulb, Trophy, Loader2 } from "lucide-react";
+import { SkeletonResearchTracking } from "@/components/shared/skeleton-states";
 import { MotionNumber } from "@/components/motion";
 import MasterDetailView from "@/components/shared/master-detail-view";
 import DetailArticleBody from "@/components/shared/detail-article-body";
@@ -117,12 +118,7 @@ export default function ResearchTracking() {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin mr-2" />
-        加载中…
-      </div>
-    );
+    return <SkeletonResearchTracking />;
   }
 
   return (

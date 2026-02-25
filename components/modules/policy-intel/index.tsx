@@ -10,7 +10,7 @@ import DataFreshness from "@/components/shared/data-freshness";
 import { cn } from "@/lib/utils";
 import PolicyFeed from "./policy-feed";
 import { usePolicyFeed } from "@/hooks/use-policy-opportunities";
-import { SkeletonSubPage } from "@/components/shared/skeleton-states";
+import { SkeletonPolicyIntel } from "@/components/shared/skeleton-states";
 import type { PolicyFeedCategory } from "@/lib/types/policy-intel";
 
 const CATEGORIES: {
@@ -131,7 +131,7 @@ export default function PolicyIntelModule() {
 
   const activeSourceCount = effectiveSources.size;
 
-  if (isLoading) return <SkeletonSubPage />;
+  if (isLoading) return <SkeletonPolicyIntel />;
 
   return (
     <div className="p-5 flex flex-col gap-4 h-[calc(100vh-4rem)] overflow-hidden">

@@ -11,6 +11,7 @@ import {
   Newspaper,
   Loader2,
 } from "lucide-react";
+import { SkeletonPeerDynamics } from "@/components/shared/skeleton-states";
 import MasterDetailView from "@/components/shared/master-detail-view";
 import DetailArticleBody from "@/components/shared/detail-article-body";
 import DateGroupedList from "@/components/shared/date-grouped-list";
@@ -137,12 +138,7 @@ export default function PeerDynamics() {
   }, [items]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground gap-2">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span className="text-sm">加载高校动态数据...</span>
-      </div>
-    );
+    return <SkeletonPeerDynamics />;
   }
 
   return (
