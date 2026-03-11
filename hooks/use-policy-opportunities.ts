@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, startTransition } from "react";
+import { useState, useEffect, useCallback, startTransition } from "react";
 import type { PolicyFeedItem } from "@/lib/types/policy-intel";
 import { fetchPolicyFeed } from "@/lib/api";
 import type { PolicyFeedResponse } from "@/lib/api";
@@ -10,6 +10,9 @@ const CACHE_KEY = "policy_feed_cache";
 const CACHE_TTL_MS = 10 * 60 * 1000;
 // Hard expiry: discard cache entirely after 24 hours
 const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+const INITIAL_LIMIT = 30;
+const FULL_LIMIT = 200;
 
 interface CachedEntry {
   data: PolicyFeedResponse;
@@ -47,8 +50,13 @@ interface UsePolicyFeedResult {
   isLoading: boolean;
   isUsingMock: boolean;
   generatedAt: string | null;
-  /** true while a background refresh is running (stale cache is being updated) */
+  /** true while a background refresh is running */
   isRefreshing: boolean;
+  /** true when only the initial batch is loaded and more is available */
+  hasMore: boolean;
+  /** fetch the full dataset; resolves when done */
+  loadMore: () => Promise<void>;
+  isLoadingMore: boolean;
 }
 
 export function usePolicyFeed(): UsePolicyFeedResult {
@@ -57,6 +65,8 @@ export function usePolicyFeed(): UsePolicyFeedResult {
   const [isUsingMock, setIsUsingMock] = useState(false);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,25 +78,24 @@ export function usePolicyFeed(): UsePolicyFeedResult {
         cached !== null && Date.now() - cached.cachedAt < CACHE_TTL_MS;
 
       if (cached && cached.data.items.length > 0) {
-        // Render cached data immediately — no skeleton shown to the user
+        // Render cached data immediately — no skeleton shown
         startTransition(() => {
           setItems(cached.data.items);
           setGeneratedAt(cached.data.generated_at);
           setIsUsingMock(false);
+          // If cache only has the initial batch, mark as having more
+          setHasMore(cached.data.items.length < cached.data.item_count);
           setIsLoading(false);
         });
 
-        if (isFresh) {
-          // Cache is still fresh — skip the network entirely
-          return;
-        }
+        if (isFresh) return;
 
-        // Stale cache: data is already visible; refresh quietly in background
+        // Stale: show cached but refresh in background
         setIsRefreshing(true);
       }
 
-      // ── Step 2: fetch from API ─────────────────────────────────────────
-      const data = await fetchPolicyFeed();
+      // ── Step 2: initial fast fetch (limit=30) ─────────────────────────
+      const data = await fetchPolicyFeed(INITIAL_LIMIT);
       if (cancelled) return;
 
       startTransition(() => {
@@ -94,14 +103,14 @@ export function usePolicyFeed(): UsePolicyFeedResult {
           setItems(data.items);
           setGeneratedAt(data.generated_at);
           setIsUsingMock(false);
-          writeCache(data); // persist for next visit
+          setHasMore(data.items.length < data.item_count);
+          writeCache(data);
         } else if (!cached) {
-          // No cache and API failed — fall back to empty state (caller shows mock)
           setItems([]);
           setGeneratedAt(null);
           setIsUsingMock(true);
+          setHasMore(false);
         }
-        // If API failed but we already showed cached data, keep showing it
         setIsLoading(false);
         setIsRefreshing(false);
       });
@@ -113,5 +122,32 @@ export function usePolicyFeed(): UsePolicyFeedResult {
     };
   }, []);
 
-  return { items, isLoading, isUsingMock, generatedAt, isRefreshing };
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore) return;
+    setIsLoadingMore(true);
+    try {
+      const data = await fetchPolicyFeed(FULL_LIMIT);
+      if (data && data.items.length > 0) {
+        startTransition(() => {
+          setItems(data.items);
+          setGeneratedAt(data.generated_at);
+          setHasMore(false);
+          writeCache(data);
+        });
+      }
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore]);
+
+  return {
+    items,
+    isLoading,
+    isUsingMock,
+    generatedAt,
+    isRefreshing,
+    hasMore,
+    loadMore,
+    isLoadingMore,
+  };
 }

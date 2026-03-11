@@ -20,11 +20,14 @@ export interface PolicyFeedResponse {
  * Fetch the full policy intelligence feed from the backend API.
  * Returns null if the request fails (caller handles fallback).
  */
-export async function fetchPolicyFeed(): Promise<PolicyFeedResponse | null> {
+export async function fetchPolicyFeed(
+  limit = 30,
+): Promise<PolicyFeedResponse | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/intel/policy/feed?limit=200`, {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${API_BASE}/api/v1/intel/policy/feed?limit=${limit}`,
+      { cache: "no-store" },
+    );
     if (!res.ok) return null;
     return (await res.json()) as PolicyFeedResponse;
   } catch {
